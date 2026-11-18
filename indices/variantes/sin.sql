@@ -1,0 +1,2 @@
+-- Variante SIN: no se crea nada. Solo quedan los índices de PRIMARY KEY y UNIQUE.
+-- (benchmark.py borra antes todos los índices idx_*)

@@ -1,0 +1,114 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Benchmark de índices</title><style>
+:root{--bg:#fff;--fg:#1d1d1f;--mut:#666;--bd:#ddd;--hd:#f4f4f6;--ok:#1a7f37;--bad:#c62828}
+@media (prefers-color-scheme:dark){:root{--bg:#16171a;--fg:#e8e8ea;--mut:#9a9aa0;--bd:#33343a;--hd:#202126;--ok:#5fd27c;--bad:#ff7b72}}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--fg);max-width:1100px;margin:0 auto;padding:16px;line-height:1.45}
+table{border-collapse:collapse;width:100%;font-size:13px;margin:8px 0 24px}
+th,td{border:1px solid var(--bd);padding:4px 6px;text-align:right} th{background:var(--hd)}
+td.t{text-align:left;font-family:monospace;font-size:11px;color:var(--mut)}
+.ok{color:var(--ok);font-weight:600} .bad{color:var(--bad);font-weight:600}
+img{max-width:100%;background:#fff;border-radius:6px} .wrap{overflow-x:auto}
+small{color:var(--mut)}</style></head><body>
+<h1>Benchmark de índices: sin vs con (elegidos por teoría)</h1>
+<p><small>5 ejecuciones por medición (más 1 de calentamiento) · tiempo = <code>Execution Time</code> de
+<code>EXPLAIN (ANALYZE)</code> · generado 2026-11-16 22:35</small></p>
+<h2>Resumen con la escala mayor</h2><img src="grafica_barras_max.png" alt="barras">
+<h2>C1 · Lecturas anómalas vs promedio de sus 24 h previas (correlacionada)</h2><img src='grafica_C1.png' alt='C1'>
+<div class='wrap'><table><tr><th>Escala</th><th>Variante</th><th>Promedio (ms)</th><th>Desv. est.</th><th>vs sin</th><th>¿Usó índice?</th><th>Veredicto</th><th>Acceso usado en el plan</th></tr>
+<tr><td>1k</td><td style='text-align:left'>Sin índices</td><td>0.345</td><td>0.026 <small>(n=5)</small></td><td></td><td>no</td><td style='text-align:left'></td><td class='t'>Seq Scan(lecturavibracion)</td></tr>
+<tr><td>1k</td><td style='text-align:left'>Con índices (teoría)</td><td>0.062</td><td>0.022 <small>(n=5)</small></td><td><span class='ok'>-82.0%</span></td><td>sí</td><td style='text-align:left'><span class='ok'>Mejora real</span></td><td class='t'>Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]</td></tr>
+<tr><td>10k</td><td style='text-align:left'>Sin índices</td><td>24.185</td><td>0.775 <small>(n=5)</small></td><td></td><td>no</td><td style='text-align:left'></td><td class='t'>Seq Scan(lecturavibracion)</td></tr>
+<tr><td>10k</td><td style='text-align:left'>Con índices (teoría)</td><td>0.529</td><td>0.018 <small>(n=5)</small></td><td><span class='ok'>-97.8%</span></td><td>sí</td><td style='text-align:left'><span class='ok'>Mejora real</span></td><td class='t'>Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]</td></tr>
+<tr><td>100k</td><td style='text-align:left'>Sin índices</td><td>2027.956</td><td>150.035 <small>(n=5)</small></td><td></td><td>no</td><td style='text-align:left'></td><td class='t'>Seq Scan(lecturavibracion)</td></tr>
+<tr><td>100k</td><td style='text-align:left'>Con índices (teoría)</td><td>4.990</td><td>0.183 <small>(n=5)</small></td><td><span class='ok'>-99.8%</span></td><td>sí</td><td style='text-align:left'><span class='ok'>Mejora real</span></td><td class='t'>Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]</td></tr>
+<tr><td>1m</td><td style='text-align:left'>Sin índices</td><td>197557.994</td><td>0.000 <small>(n=1)</small></td><td></td><td>no</td><td style='text-align:left'></td><td class='t'>Seq Scan(lecturavibracion)</td></tr>
+<tr><td>1m</td><td style='text-align:left'>Con índices (teoría)</td><td>55.983</td><td>1.058 <small>(n=5)</small></td><td><span class='ok'>-100.0%</span></td><td>sí</td><td style='text-align:left'><span class='ok'>Mejora real</span></td><td class='t'>Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]</td></tr>
+</table></div>
+<h2>C2 · Sensores sobre el promedio de su parque, últimas 48 h (rango + RANK)</h2><img src='grafica_C2.png' alt='C2'>
+<div class='wrap'><table><tr><th>Escala</th><th>Variante</th><th>Promedio (ms)</th><th>Desv. est.</th><th>vs sin</th><th>¿Usó índice?</th><th>Veredicto</th><th>Acceso usado en el plan</th></tr>
+<tr><td>1k</td><td style='text-align:left'>Sin índices</td><td>3.496</td><td>0.160 <small>(n=5)</small></td><td></td><td>no</td><td style='text-align:left'></td><td class='t'>Seq Scan(lecturavibracion)</td></tr>
+<tr><td>1k</td><td style='text-align:left'>Con índices (teoría)</td><td>3.462</td><td>0.108 <small>(n=5)</small></td><td><span class=''>-1.0%</span></td><td>sí</td><td style='text-align:left'><span class=''>Empate: dentro del ruido</span></td><td class='t'>Index Only Scan[idx_btree_lectura_fecha]</td></tr>
+<tr><td>10k</td><td style='text-align:left'>Sin índices</td><td>14.357</td><td>0.656 <small>(n=5)</small></td><td></td><td>no</td><td style='text-align:left'></td><td class='t'>Seq Scan(lecturavibracion)</td></tr>
+<tr><td>10k</td><td style='text-align:left'>Con índices (teoría)</td><td>13.629</td><td>0.443 <small>(n=5)</small></td><td><span class='ok'>-5.1%</span></td><td>sí</td><td style='text-align:left'><span class=''>Empate: dentro del ruido</span></td><td class='t'>Index Only Scan[idx_btree_lectura_fecha]</td></tr>
+<tr><td>100k</td><td style='text-align:left'>Sin índices</td><td>59.968</td><td>1.665 <small>(n=5)</small></td><td></td><td>no</td><td style='text-align:left'></td><td class='t'>Seq Scan(lecturavibracion)</td></tr>
+<tr><td>100k</td><td style='text-align:left'>Con índices (teoría)</td><td>48.034</td><td>0.738 <small>(n=5)</small></td><td><span class='ok'>-19.9%</span></td><td>sí</td><td style='text-align:left'><span class='ok'>Mejora real</span></td><td class='t'>Index Only Scan[idx_btree_lectura_fecha]</td></tr>
+<tr><td>1m</td><td style='text-align:left'>Sin índices</td><td>165.969</td><td>2.629 <small>(n=5)</small></td><td></td><td>no</td><td style='text-align:left'></td><td class='t'>Seq Scan(lecturavibracion)</td></tr>
+<tr><td>1m</td><td style='text-align:left'>Con índices (teoría)</td><td>50.538</td><td>0.584 <small>(n=5)</small></td><td><span class='ok'>-69.5%</span></td><td>sí</td><td style='text-align:left'><span class='ok'>Mejora real</span></td><td class='t'>Index Only Scan[idx_btree_lectura_fecha]</td></tr>
+</table></div>
+<h2>C3 · Turbinas con rachas de vibración alta (gaps &amp; islands)</h2><img src='grafica_C3.png' alt='C3'>
+<div class='wrap'><table><tr><th>Escala</th><th>Variante</th><th>Promedio (ms)</th><th>Desv. est.</th><th>vs sin</th><th>¿Usó índice?</th><th>Veredicto</th><th>Acceso usado en el plan</th></tr>
+<tr><td>1k</td><td style='text-align:left'>Sin índices</td><td>1.423</td><td>0.047 <small>(n=5)</small></td><td></td><td>no</td><td style='text-align:left'></td><td class='t'>Seq Scan(lecturavibracion)</td></tr>
+<tr><td>1k</td><td style='text-align:left'>Con índices (teoría)</td><td>1.395</td><td>0.073 <small>(n=5)</small></td><td><span class=''>-1.9%</span></td><td>no</td><td style='text-align:left'><span class=''>Empate: el plan no usa índices</span></td><td class='t'>Seq Scan(lecturavibracion)</td></tr>
+<tr><td>10k</td><td style='text-align:left'>Sin índices</td><td>13.153</td><td>0.324 <small>(n=5)</small></td><td></td><td>no</td><td style='text-align:left'></td><td class='t'>Seq Scan(lecturavibracion)</td></tr>
+<tr><td>10k</td><td style='text-align:left'>Con índices (teoría)</td><td>13.612</td><td>0.057 <small>(n=5)</small></td><td><span class=''>+3.5%</span></td><td>sí</td><td style='text-align:left'><span class=''>Empate: dentro del ruido</span></td><td class='t'>Index Only Scan[idx_btree_lectura_sensor_fecha]</td></tr>
+<tr><td>100k</td><td style='text-align:left'>Sin índices</td><td>148.430</td><td>0.863 <small>(n=5)</small></td><td></td><td>no</td><td style='text-align:left'></td><td class='t'>Seq Scan(lecturavibracion)</td></tr>
+<tr><td>100k</td><td style='text-align:left'>Con índices (teoría)</td><td>144.590</td><td>0.772 <small>(n=5)</small></td><td><span class=''>-2.6%</span></td><td>sí</td><td style='text-align:left'><span class='ok'>Mejora real</span></td><td class='t'>Index Only Scan[idx_btree_lectura_sensor_fecha]</td></tr>
+<tr><td>1m</td><td style='text-align:left'>Sin índices</td><td>1645.907</td><td>14.194 <small>(n=5)</small></td><td></td><td>no</td><td style='text-align:left'></td><td class='t'>Seq Scan(lecturavibracion)</td></tr>
+<tr><td>1m</td><td style='text-align:left'>Con índices (teoría)</td><td>1443.902</td><td>13.957 <small>(n=5)</small></td><td><span class='ok'>-12.3%</span></td><td>sí</td><td style='text-align:left'><span class='ok'>Mejora real</span></td><td class='t'>Index Only Scan[idx_btree_lectura_sensor_fecha]</td></tr>
+</table></div>
+<h2>C4 · Tendencia de las 5 lecturas previas a cada alerta grave (LATERAL)</h2><img src='grafica_C4.png' alt='C4'>
+<div class='wrap'><table><tr><th>Escala</th><th>Variante</th><th>Promedio (ms)</th><th>Desv. est.</th><th>vs sin</th><th>¿Usó índice?</th><th>Veredicto</th><th>Acceso usado en el plan</th></tr>
+<tr><td>1k</td><td style='text-align:left'>Sin índices</td><td>0.376</td><td>0.054 <small>(n=5)</small></td><td></td><td>no</td><td style='text-align:left'></td><td class='t'>Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)</td></tr>
+<tr><td>1k</td><td style='text-align:left'>Con índices (teoría)</td><td>0.252</td><td>0.041 <small>(n=5)</small></td><td><span class='ok'>-33.1%</span></td><td>sí</td><td style='text-align:left'><span class='ok'>Mejora real</span></td><td class='t'>Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]</td></tr>
+<tr><td>10k</td><td style='text-align:left'>Sin índices</td><td>10.704</td><td>0.419 <small>(n=5)</small></td><td></td><td>no</td><td style='text-align:left'></td><td class='t'>Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)</td></tr>
+<tr><td>10k</td><td style='text-align:left'>Con índices (teoría)</td><td>0.445</td><td>0.012 <small>(n=5)</small></td><td><span class='ok'>-95.8%</span></td><td>sí</td><td style='text-align:left'><span class='ok'>Mejora real</span></td><td class='t'>Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]</td></tr>
+<tr><td>100k</td><td style='text-align:left'>Sin índices</td><td>1114.825</td><td>20.528 <small>(n=5)</small></td><td></td><td>no</td><td style='text-align:left'></td><td class='t'>Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)</td></tr>
+<tr><td>100k</td><td style='text-align:left'>Con índices (teoría)</td><td>3.552</td><td>0.106 <small>(n=5)</small></td><td><span class='ok'>-99.7%</span></td><td>sí</td><td style='text-align:left'><span class='ok'>Mejora real</span></td><td class='t'>Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]</td></tr>
+<tr><td>1m</td><td style='text-align:left'>Sin índices</td><td>92572.687</td><td>2736.854 <small>(n=5)</small></td><td></td><td>no</td><td style='text-align:left'></td><td class='t'>Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)</td></tr>
+<tr><td>1m</td><td style='text-align:left'>Con índices (teoría)</td><td>36.330</td><td>2.968 <small>(n=5)</small></td><td><span class='ok'>-100.0%</span></td><td>sí</td><td style='text-align:left'><span class='ok'>Mejora real</span></td><td class='t'>Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]</td></tr>
+</table></div>
+<h2>C5 · Turbinas que se degradan más rápido (correlacionada + NOT EXISTS)</h2><img src='grafica_C5.png' alt='C5'>
+<div class='wrap'><table><tr><th>Escala</th><th>Variante</th><th>Promedio (ms)</th><th>Desv. est.</th><th>vs sin</th><th>¿Usó índice?</th><th>Veredicto</th><th>Acceso usado en el plan</th></tr>
+<tr><td>1k</td><td style='text-align:left'>Sin índices</td><td>0.458</td><td>0.007 <small>(n=5)</small></td><td></td><td>no</td><td style='text-align:left'></td><td class='t'>Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)</td></tr>
+<tr><td>1k</td><td style='text-align:left'>Con índices (teoría)</td><td>0.060</td><td>0.002 <small>(n=5)</small></td><td><span class='ok'>-86.9%</span></td><td>sí</td><td style='text-align:left'><span class='ok'>Mejora real</span></td><td class='t'>Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)</td></tr>
+<tr><td>10k</td><td style='text-align:left'>Sin índices</td><td>74.821</td><td>0.203 <small>(n=5)</small></td><td></td><td>no</td><td style='text-align:left'></td><td class='t'>Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)</td></tr>
+<tr><td>10k</td><td style='text-align:left'>Con índices (teoría)</td><td>0.776</td><td>0.191 <small>(n=5)</small></td><td><span class='ok'>-99.0%</span></td><td>sí</td><td style='text-align:left'><span class='ok'>Mejora real</span></td><td class='t'>Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)</td></tr>
+<tr><td>100k</td><td style='text-align:left'>Sin índices</td><td>5933.070</td><td>37.928 <small>(n=5)</small></td><td></td><td>no</td><td style='text-align:left'></td><td class='t'>Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)</td></tr>
+<tr><td>100k</td><td style='text-align:left'>Con índices (teoría)</td><td>5.606</td><td>0.072 <small>(n=5)</small></td><td><span class='ok'>-99.9%</span></td><td>sí</td><td style='text-align:left'><span class='ok'>Mejora real</span></td><td class='t'>Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)</td></tr>
+<tr><td>1m</td><td style='text-align:left'>Sin índices</td><td>575110.453</td><td>0.000 <small>(n=1)</small></td><td></td><td>no</td><td style='text-align:left'></td><td class='t'>Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)</td></tr>
+<tr><td>1m</td><td style='text-align:left'>Con índices (teoría)</td><td>71.844</td><td>8.848 <small>(n=5)</small></td><td><span class='ok'>-100.0%</span></td><td>sí</td><td style='text-align:left'><span class='ok'>Mejora real</span></td><td class='t'>Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)</td></tr>
+</table></div>
+<h2>Costo de actualización (INSERT / UPDATE / DELETE)</h2><p><small>Cada operación se ejecuta y se deshace con ROLLBACK.</small></p><img src='grafica_actualizacion.png' alt='actualizacion'>
+<div class='wrap'><table><tr><th>Escala</th><th>Operación</th><th>Sin índices (ms)</th><th>Con índices (teoría) (ms)</th></tr>
+<tr><td>1m</td><td style='text-align:left'>INSERT 1000 lecturas</td><td>24.96</td><td>16.72</td></tr>
+<tr><td>1m</td><td style='text-align:left'>UPDATE rms 1 día</td><td>170.35</td><td>271.60</td></tr>
+<tr><td>1m</td><td style='text-align:left'>UPDATE estado alertas</td><td>7.34</td><td>7.98</td></tr>
+<tr><td>1m</td><td style='text-align:left'>DELETE 1 día</td><td>958585.39</td><td>5956.11</td></tr>
+</table></div>
+<h2>Espacio de los índices</h2><img src='grafica_tamanos.png' alt='tamanos'>
+<div class='wrap'><table><tr><th>Escala</th><th>Variante</th><th>Índice</th><th>Tabla</th><th>Tamaño (KB)</th></tr>
+<tr><td>1k</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_btree_lectura_sensor_fecha</td><td class='t'>lecturavibracion</td><td>56</td></tr>
+<tr><td>1k</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_btree_lectura_rms</td><td class='t'>lecturavibracion</td><td>40</td></tr>
+<tr><td>1k</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_btree_lectura_fecha</td><td class='t'>lecturavibracion</td><td>64</td></tr>
+<tr><td>1k</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_hash_alerta_nivel</td><td class='t'>alertamantenimiento</td><td>32</td></tr>
+<tr><td>1k</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_hash_alertaorden_alerta</td><td class='t'>alertaorden</td><td>32</td></tr>
+<tr><td>1k</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_hash_sensor_componente</td><td class='t'>sensorvibracion</td><td>48</td></tr>
+<tr><td>1k</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_hash_componente_turbina</td><td class='t'>componenteturbina</td><td>32</td></tr>
+<tr><td>1k</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_hash_turbina_parque</td><td class='t'>turbina</td><td>32</td></tr>
+<tr><td>10k</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_btree_lectura_sensor_fecha</td><td class='t'>lecturavibracion</td><td>416</td></tr>
+<tr><td>10k</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_btree_lectura_rms</td><td class='t'>lecturavibracion</td><td>240</td></tr>
+<tr><td>10k</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_btree_lectura_fecha</td><td class='t'>lecturavibracion</td><td>488</td></tr>
+<tr><td>10k</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_hash_alerta_nivel</td><td class='t'>alertamantenimiento</td><td>32</td></tr>
+<tr><td>10k</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_hash_alertaorden_alerta</td><td class='t'>alertaorden</td><td>32</td></tr>
+<tr><td>10k</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_hash_sensor_componente</td><td class='t'>sensorvibracion</td><td>48</td></tr>
+<tr><td>10k</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_hash_componente_turbina</td><td class='t'>componenteturbina</td><td>32</td></tr>
+<tr><td>10k</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_hash_turbina_parque</td><td class='t'>turbina</td><td>32</td></tr>
+<tr><td>100k</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_btree_lectura_sensor_fecha</td><td class='t'>lecturavibracion</td><td>3984</td></tr>
+<tr><td>100k</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_btree_lectura_rms</td><td class='t'>lecturavibracion</td><td>2224</td></tr>
+<tr><td>100k</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_btree_lectura_fecha</td><td class='t'>lecturavibracion</td><td>4688</td></tr>
+<tr><td>100k</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_hash_alerta_nivel</td><td class='t'>alertamantenimiento</td><td>32</td></tr>
+<tr><td>100k</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_hash_alertaorden_alerta</td><td class='t'>alertaorden</td><td>32</td></tr>
+<tr><td>100k</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_hash_sensor_componente</td><td class='t'>sensorvibracion</td><td>48</td></tr>
+<tr><td>100k</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_hash_componente_turbina</td><td class='t'>componenteturbina</td><td>32</td></tr>
+<tr><td>100k</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_hash_turbina_parque</td><td class='t'>turbina</td><td>32</td></tr>
+<tr><td>1m</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_btree_lectura_sensor_fecha</td><td class='t'>lecturavibracion</td><td>39296</td></tr>
+<tr><td>1m</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_btree_lectura_rms</td><td class='t'>lecturavibracion</td><td>21808</td></tr>
+<tr><td>1m</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_btree_lectura_fecha</td><td class='t'>lecturavibracion</td><td>46304</td></tr>
+<tr><td>1m</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_hash_alerta_nivel</td><td class='t'>alertamantenimiento</td><td>616</td></tr>
+<tr><td>1m</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_hash_alertaorden_alerta</td><td class='t'>alertaorden</td><td>80</td></tr>
+<tr><td>1m</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_hash_sensor_componente</td><td class='t'>sensorvibracion</td><td>48</td></tr>
+<tr><td>1m</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_hash_componente_turbina</td><td class='t'>componenteturbina</td><td>32</td></tr>
+<tr><td>1m</td><td style='text-align:left'>Con índices (teoría)</td><td class='t'>idx_hash_turbina_parque</td><td class='t'>turbina</td><td>32</td></tr>
+</table></div>
+</body></html>

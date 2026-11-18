@@ -1,0 +1,31 @@
+                                                                                        QUERY PLAN                                                                                        
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=18912.98..18914.98 rows=800 width=109) (actual time=153.444..155.076 rows=800 loops=1)
+   Sort Key: (max(l.valor_rms)) DESC
+   Sort Method: quicksort  Memory: 75kB
+   ->  Finalize GroupAggregate  (cost=18657.73..18874.41 rows=800 width=109) (actual time=150.680..154.618 rows=800 loops=1)
+         Group Key: s.id_sensor
+         ->  Gather Merge  (cost=18657.73..18844.41 rows=1600 width=109) (actual time=150.664..152.726 rows=2400 loops=1)
+               Workers Planned: 2
+               Workers Launched: 2
+               ->  Sort  (cost=17657.70..17659.70 rows=800 width=109) (actual time=148.374..148.436 rows=800 loops=3)
+                     Sort Key: s.id_sensor
+                     Sort Method: quicksort  Memory: 118kB
+                     Worker 0:  Sort Method: quicksort  Memory: 118kB
+                     Worker 1:  Sort Method: quicksort  Memory: 118kB
+                     ->  Partial HashAggregate  (cost=17609.13..17619.13 rows=800 width=109) (actual time=147.746..148.084 rows=800 loops=3)
+                           Group Key: s.id_sensor
+                           Batches: 1  Memory Usage: 553kB
+                           Worker 0:  Batches: 1  Memory Usage: 553kB
+                           Worker 1:  Batches: 1  Memory Usage: 553kB
+                           ->  Hash Join  (cost=26.00..15194.71 rows=241442 width=25) (actual time=0.218..79.784 rows=195603 loops=3)
+                                 Hash Cond: (l.id_sensor = s.id_sensor)
+                                 ->  Parallel Seq Scan on lecturavibracion l  (cost=0.00..14531.56 rows=241442 width=16) (actual time=0.006..37.429 rows=195603 loops=3)
+                                       Filter: ((fecha_hora >= '2026-01-01 00:00:00'::timestamp without time zone) AND (fecha_hora < '2026-02-01 00:00:00'::timestamp without time zone))
+                                       Rows Removed by Filter: 134933
+                                 ->  Hash  (cost=16.00..16.00 rows=800 width=13) (actual time=0.195..0.196 rows=800 loops=3)
+                                       Buckets: 1024  Batches: 1  Memory Usage: 46kB
+                                       ->  Seq Scan on sensorvibracion s  (cost=0.00..16.00 rows=800 width=13) (actual time=0.010..0.085 rows=800 loops=3)
+ Planning Time: 0.557 ms
+ Execution Time: 155.316 ms
+(28 rows)

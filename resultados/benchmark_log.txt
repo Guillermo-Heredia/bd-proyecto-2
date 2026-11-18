@@ -1,0 +1,67 @@
+
+=== 1k · Sin índices (índices creados en 0.00 s)
+  C1   prom        0.345 ms   Seq Scan(lecturavibracion)
+  C2   prom        3.496 ms   Seq Scan(lecturavibracion)
+  C3   prom        1.423 ms   Seq Scan(lecturavibracion)
+  C4   prom        0.376 ms   Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+  C5   prom        0.458 ms   Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)
+
+=== 1k · Con índices (teoría) (índices creados en 0.20 s)
+  C1   prom        0.062 ms   Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+  C2   prom        3.462 ms   Index Only Scan[idx_btree_lectura_fecha]
+  C3   prom        1.395 ms   Seq Scan(lecturavibracion)
+  C4   prom        0.252 ms   Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+  C5   prom        0.060 ms   Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)
+
+=== 10k · Sin índices (índices creados en 0.00 s)
+  C1   prom       24.185 ms   Seq Scan(lecturavibracion)
+  C2   prom       14.357 ms   Seq Scan(lecturavibracion)
+  C3   prom       13.153 ms   Seq Scan(lecturavibracion)
+  C4   prom       10.704 ms   Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+  C5   prom       74.821 ms   Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)
+
+=== 10k · Con índices (teoría) (índices creados en 0.25 s)
+  C1   prom        0.529 ms   Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+  C2   prom       13.629 ms   Index Only Scan[idx_btree_lectura_fecha]
+  C3   prom       13.612 ms   Index Only Scan[idx_btree_lectura_sensor_fecha]
+  C4   prom        0.445 ms   Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+  C5   prom        0.776 ms   Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)
+
+=== 100k · Sin índices (índices creados en 0.00 s)
+  C1   prom     2027.956 ms   Seq Scan(lecturavibracion)
+  C2   prom       59.968 ms   Seq Scan(lecturavibracion)
+  C3   prom      148.430 ms   Seq Scan(lecturavibracion)
+  C4   prom     1114.825 ms   Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+  C5   prom     5933.070 ms   Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)
+
+=== 100k · Con índices (teoría) (índices creados en 0.34 s)
+  C1   prom        4.990 ms   Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+  C2   prom       48.034 ms   Index Only Scan[idx_btree_lectura_fecha]
+  C3   prom      144.590 ms   Index Only Scan[idx_btree_lectura_sensor_fecha]
+  C4   prom        3.552 ms   Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+  C5   prom        5.606 ms   Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)
+
+=== 1m · Sin índices (índices creados en 0.00 s)
+  C1   prom   197557.994 ms (ejecución única)   Seq Scan(lecturavibracion)
+  C2   prom      165.969 ms   Seq Scan(lecturavibracion)
+  C3   prom     1645.907 ms   Seq Scan(lecturavibracion)
+  C4   prom    92572.687 ms   Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+  C5   prom   575110.453 ms (ejecución única)   Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)
+  [act] INSERT 1000 lecturas     prom       24.960 ms
+  [act] UPDATE rms 1 día         prom      170.346 ms
+  [act] UPDATE estado alertas    prom        7.343 ms
+  [act] DELETE 1 día             prom   958585.392 ms
+
+=== 1m · Con índices (teoría) (índices creados en 2.10 s)
+  C1   prom       55.983 ms   Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+  C2   prom       50.538 ms   Index Only Scan[idx_btree_lectura_fecha]
+  C3   prom     1443.902 ms   Index Only Scan[idx_btree_lectura_sensor_fecha]
+  C4   prom       36.330 ms   Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+  C5   prom       71.844 ms   Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)
+  [act] INSERT 1000 lecturas     prom       16.720 ms
+  [act] UPDATE rms 1 día         prom      271.598 ms
+  [act] UPDATE estado alertas    prom        7.984 ms
+  [act] DELETE 1 día             prom     5956.112 ms
+
+Medición terminada en 2403 s
+Listo: /home/fkrampus/Escritorio/utec/BaseDatos/proyectobd2/version_guille/resultados/benchmark/reporte.html

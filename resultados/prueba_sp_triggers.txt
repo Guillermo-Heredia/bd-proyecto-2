@@ -1,0 +1,79 @@
+BEGIN
+--- Vistas
+ filas_v_alertas_criticas_abiertas 
+-----------------------------------
+                               100
+(1 row)
+
+ filas_v_estadisticas_sensor_mes 
+---------------------------------
+                            1600
+(1 row)
+
+ id_tecnico |  nombres  | especialidad | pendientes | en_proceso 
+------------+-----------+--------------+------------+------------
+          1 | Tecnico 1 | Electrica    |         11 |         14
+          2 | Tecnico 2 | Vibraciones  |          6 |         15
+          3 | Tecnico 3 | Mecanica     |          5 |         15
+(3 rows)
+
+--- SP1: crear orden desde la alerta 1 (técnico 3)
+ p_id_orden 
+------------
+       2002
+(1 row)
+
+ id_orden | id_turbina |  estado   | prioridad 
+----------+------------+-----------+-----------
+     2002 |          7 | Pendiente | Media
+(1 row)
+
+ id_alerta | estado_alerta 
+-----------+---------------
+         1 | En revision
+(1 row)
+
+--- SP2: cerrar esa orden (la orden y su alerta pasan a Finalizada/Cerrada)
+DO
+ id_orden |   estado   | tiene_cierre | estado_alerta 
+----------+------------+--------------+---------------
+     2002 | Finalizada | t            | Cerrada
+(1 row)
+
+--- F1: historial de la turbina 7
+ origen | count 
+--------+-------
+ Alerta |    45
+ Orden  |    28
+(2 rows)
+
+--- T2: lectura con RMS 5.8 -> alerta Critica automática
+INSERT 0 1
+ id_alerta | id_sensor |  nivel  | estado  | valor_detectado 
+-----------+-----------+---------+---------+-----------------
+      5020 |         1 | Critica | Abierta |          5.8000
+(1 row)
+
+--- T3: finalizar una orden sin fecha_cierre -> se completa sola
+ id_orden | cierre_automatico 
+----------+-------------------
+        2 | t
+(1 row)
+
+UPDATE 1
+--- T1: vincular una alerta de OTRA turbina debe dar ERROR (esperado)
+SAVEPOINT
+psql:experimento/probar_sp_triggers.sql:44: ERROR:  La alerta 5020 no pertenece a la turbina de la orden 1
+CONTEXT:  PL/pgSQL function fn_validar_alerta_orden() line 13 at RAISE
+ROLLBACK
+--- Caso borde: cerrar una orden Pendiente SIN técnico (viola un CHECK)
+SAVEPOINT
+psql:experimento/probar_sp_triggers.sql:52: ERROR:  new row for relation "ordentrabajo" violates check constraint "ordentrabajo_check1"
+DETAIL:  Failing row contains (9, 67, null, 2026-01-28 18:04:18.166186, 2026-01-31 18:04:18.166186, 2026-11-16 23:09:56.310621, Critica, Correctivo, Orden de correctivo sintetica, Finalizada).
+CONTEXT:  SQL statement "UPDATE OrdenTrabajo SET estado = 'Finalizada', fecha_cierre = now()
+  WHERE id_orden = p_id_orden"
+PL/pgSQL function sp_cerrar_orden(bigint) line 3 at SQL statement
+SQL statement "CALL sp_cerrar_orden(v)"
+PL/pgSQL function inline_code_block line 3 at CALL
+ROLLBACK
+ROLLBACK

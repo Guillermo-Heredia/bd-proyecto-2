@@ -1,0 +1,28 @@
+                                                                    QUERY PLAN                                                                     
+---------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=14.30..14.31 rows=1 width=69) (actual time=0.076..0.078 rows=0 loops=1)
+   Sort Key: o.fecha_creacion
+   Sort Method: quicksort  Memory: 25kB
+   ->  Nested Loop Left Join  (cost=9.77..14.29 rows=1 width=69) (actual time=0.063..0.065 rows=0 loops=1)
+         ->  Nested Loop  (cost=9.35..11.22 rows=1 width=67) (actual time=0.063..0.065 rows=0 loops=1)
+               ->  Hash Right Join  (cost=9.08..10.50 rows=1 width=49) (actual time=0.063..0.064 rows=0 loops=1)
+                     Hash Cond: (tc.id_tecnico = o.id_tecnico)
+                     ->  Seq Scan on tecnico tc  (cost=0.00..1.30 rows=30 width=14) (never executed)
+                     ->  Hash  (cost=9.06..9.06 rows=1 width=43) (actual time=0.053..0.054 rows=0 loops=1)
+                           Buckets: 1024  Batches: 1  Memory Usage: 8kB
+                           ->  Hash Join  (cost=6.51..9.06 rows=1 width=43) (actual time=0.053..0.054 rows=0 loops=1)
+                                 Hash Cond: (ao.id_orden = o.id_orden)
+                                 ->  Seq Scan on alertaorden ao  (cost=0.00..2.22 rows=122 width=16) (actual time=0.006..0.011 rows=122 loops=1)
+                                 ->  Hash  (cost=6.50..6.50 rows=1 width=35) (actual time=0.023..0.024 rows=1 loops=1)
+                                       Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                                       ->  Seq Scan on ordentrabajo o  (cost=0.00..6.50 rows=1 width=35) (actual time=0.008..0.019 rows=1 loops=1)
+                                             Filter: (id_turbina = 7)
+                                             Rows Removed by Filter: 199
+               ->  Index Scan using alertamantenimiento_pkey on alertamantenimiento a  (cost=0.28..0.72 rows=1 width=26) (never executed)
+                     Index Cond: (id_alerta = ao.id_alerta)
+         ->  Index Only Scan using idx_lectura_sensor_fecha_rms on lecturavibracion l  (cost=0.42..3.07 rows=1 width=18) (never executed)
+               Index Cond: ((id_sensor = a.id_sensor) AND (fecha_hora = a.fecha_hora_lectura))
+               Heap Fetches: 0
+ Planning Time: 1.380 ms
+ Execution Time: 0.146 ms
+(25 rows)

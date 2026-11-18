@@ -1,0 +1,233 @@
+escala,variante,consulta,ejecucion,ms,usa_indice,acceso
+1k,sin,C1,1,0.380,no,Seq Scan(lecturavibracion)
+1k,sin,C1,2,0.334,no,Seq Scan(lecturavibracion)
+1k,sin,C1,3,0.329,no,Seq Scan(lecturavibracion)
+1k,sin,C1,4,0.334,no,Seq Scan(lecturavibracion)
+1k,sin,C1,5,0.332,no,Seq Scan(lecturavibracion)
+1k,sin,C2,1,1.295,no,Seq Scan(lecturavibracion)
+1k,sin,C2,2,1.305,no,Seq Scan(lecturavibracion)
+1k,sin,C2,3,1.310,no,Seq Scan(lecturavibracion)
+1k,sin,C2,4,1.303,no,Seq Scan(lecturavibracion)
+1k,sin,C2,5,1.404,no,Seq Scan(lecturavibracion)
+1k,sin,C2s,1,0.066,no,Seq Scan(lecturavibracion)
+1k,sin,C2s,2,0.056,no,Seq Scan(lecturavibracion)
+1k,sin,C2s,3,0.054,no,Seq Scan(lecturavibracion)
+1k,sin,C2s,4,0.064,no,Seq Scan(lecturavibracion)
+1k,sin,C2s,5,0.063,no,Seq Scan(lecturavibracion)
+1k,sin,C3,1,1.222,no,Seq Scan(lecturavibracion)
+1k,sin,C3,2,1.288,no,Seq Scan(lecturavibracion)
+1k,sin,C3,3,1.315,no,Seq Scan(lecturavibracion)
+1k,sin,C3,4,1.092,no,Seq Scan(lecturavibracion)
+1k,sin,C3,5,1.183,no,Seq Scan(lecturavibracion)
+1k,sin,C4,1,0.350,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+1k,sin,C4,2,0.442,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+1k,sin,C4,3,0.328,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+1k,sin,C4,4,0.416,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+1k,sin,C4,5,0.445,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+1k,sin,C5,1,0.600,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)
+1k,sin,C5,2,0.536,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)
+1k,sin,C5,3,0.447,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)
+1k,sin,C5,4,0.450,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)
+1k,sin,C5,5,0.460,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)
+1k,teoria,C1,1,0.064,si,Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+1k,teoria,C1,2,0.062,si,Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+1k,teoria,C1,3,0.058,si,Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+1k,teoria,C1,4,0.064,si,Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+1k,teoria,C1,5,0.054,si,Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+1k,teoria,C2,1,1.308,no,Seq Scan(lecturavibracion)
+1k,teoria,C2,2,1.295,no,Seq Scan(lecturavibracion)
+1k,teoria,C2,3,1.299,no,Seq Scan(lecturavibracion)
+1k,teoria,C2,4,1.303,no,Seq Scan(lecturavibracion)
+1k,teoria,C2,5,1.252,no,Seq Scan(lecturavibracion)
+1k,teoria,C2s,1,0.030,si,Index Scan[idx_btree_lectura_fecha]
+1k,teoria,C2s,2,0.018,si,Index Scan[idx_btree_lectura_fecha]
+1k,teoria,C2s,3,0.020,si,Index Scan[idx_btree_lectura_fecha]
+1k,teoria,C2s,4,0.019,si,Index Scan[idx_btree_lectura_fecha]
+1k,teoria,C2s,5,0.020,si,Index Scan[idx_btree_lectura_fecha]
+1k,teoria,C3,1,1.152,no,Seq Scan(lecturavibracion)
+1k,teoria,C3,2,1.168,no,Seq Scan(lecturavibracion)
+1k,teoria,C3,3,1.206,no,Seq Scan(lecturavibracion)
+1k,teoria,C3,4,1.226,no,Seq Scan(lecturavibracion)
+1k,teoria,C3,5,1.197,no,Seq Scan(lecturavibracion)
+1k,teoria,C4,1,0.179,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+1k,teoria,C4,2,0.179,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+1k,teoria,C4,3,0.162,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+1k,teoria,C4,4,0.208,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+1k,teoria,C4,5,0.197,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+1k,teoria,C5,1,0.066,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)
+1k,teoria,C5,2,0.064,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)
+1k,teoria,C5,3,0.062,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)
+1k,teoria,C5,4,0.064,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)
+1k,teoria,C5,5,0.063,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)
+10k,sin,C1,1,25.521,no,Seq Scan(lecturavibracion)
+10k,sin,C1,2,25.093,no,Seq Scan(lecturavibracion)
+10k,sin,C1,3,26.078,no,Seq Scan(lecturavibracion)
+10k,sin,C1,4,24.091,no,Seq Scan(lecturavibracion)
+10k,sin,C1,5,24.938,no,Seq Scan(lecturavibracion)
+10k,sin,C2,1,5.748,no,Seq Scan(lecturavibracion)
+10k,sin,C2,2,5.707,no,Seq Scan(lecturavibracion)
+10k,sin,C2,3,5.672,no,Seq Scan(lecturavibracion)
+10k,sin,C2,4,5.630,no,Seq Scan(lecturavibracion)
+10k,sin,C2,5,5.790,no,Seq Scan(lecturavibracion)
+10k,sin,C2s,1,0.470,no,Seq Scan(lecturavibracion)
+10k,sin,C2s,2,0.422,no,Seq Scan(lecturavibracion)
+10k,sin,C2s,3,0.405,no,Seq Scan(lecturavibracion)
+10k,sin,C2s,4,0.478,no,Seq Scan(lecturavibracion)
+10k,sin,C2s,5,0.582,no,Seq Scan(lecturavibracion)
+10k,sin,C3,1,11.220,no,Seq Scan(lecturavibracion)
+10k,sin,C3,2,10.489,no,Seq Scan(lecturavibracion)
+10k,sin,C3,3,11.141,no,Seq Scan(lecturavibracion)
+10k,sin,C3,4,10.974,no,Seq Scan(lecturavibracion)
+10k,sin,C3,5,10.912,no,Seq Scan(lecturavibracion)
+10k,sin,C4,1,10.905,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+10k,sin,C4,2,10.890,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+10k,sin,C4,3,10.686,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+10k,sin,C4,4,9.778,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+10k,sin,C4,5,9.696,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+10k,sin,C5,1,80.667,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)
+10k,sin,C5,2,81.504,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)
+10k,sin,C5,3,81.446,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)
+10k,sin,C5,4,80.800,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)
+10k,sin,C5,5,81.172,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)
+10k,teoria,C1,1,0.532,si,Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+10k,teoria,C1,2,0.497,si,Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+10k,teoria,C1,3,0.504,si,Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+10k,teoria,C1,4,0.496,si,Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+10k,teoria,C1,5,0.493,si,Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+10k,teoria,C2,1,5.693,no,Seq Scan(lecturavibracion)
+10k,teoria,C2,2,6.437,no,Seq Scan(lecturavibracion)
+10k,teoria,C2,3,5.493,no,Seq Scan(lecturavibracion)
+10k,teoria,C2,4,5.515,no,Seq Scan(lecturavibracion)
+10k,teoria,C2,5,5.193,no,Seq Scan(lecturavibracion)
+10k,teoria,C2s,1,0.021,si,Index Scan[idx_btree_lectura_fecha]
+10k,teoria,C2s,2,0.019,si,Index Scan[idx_btree_lectura_fecha]
+10k,teoria,C2s,3,0.020,si,Index Scan[idx_btree_lectura_fecha]
+10k,teoria,C2s,4,0.024,si,Index Scan[idx_btree_lectura_fecha]
+10k,teoria,C2s,5,0.019,si,Index Scan[idx_btree_lectura_fecha]
+10k,teoria,C3,1,10.844,si,Index Only Scan[idx_btree_lectura_sensor_fecha]
+10k,teoria,C3,2,11.927,si,Index Only Scan[idx_btree_lectura_sensor_fecha]
+10k,teoria,C3,3,20.191,si,Index Only Scan[idx_btree_lectura_sensor_fecha]
+10k,teoria,C3,4,14.019,si,Index Only Scan[idx_btree_lectura_sensor_fecha]
+10k,teoria,C3,5,12.408,si,Index Only Scan[idx_btree_lectura_sensor_fecha]
+10k,teoria,C4,1,0.514,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+10k,teoria,C4,2,0.509,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+10k,teoria,C4,3,0.564,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+10k,teoria,C4,4,0.495,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+10k,teoria,C4,5,0.434,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+10k,teoria,C5,1,1.214,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)
+10k,teoria,C5,2,0.915,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)
+10k,teoria,C5,3,0.673,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)
+10k,teoria,C5,4,0.844,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)
+10k,teoria,C5,5,0.906,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)
+100k,sin,C1,1,2070.183,no,Seq Scan(lecturavibracion)
+100k,sin,C1,2,2096.289,no,Seq Scan(lecturavibracion)
+100k,sin,C1,3,2098.440,no,Seq Scan(lecturavibracion)
+100k,sin,C1,4,2112.347,no,Seq Scan(lecturavibracion)
+100k,sin,C1,5,2137.961,no,Seq Scan(lecturavibracion)
+100k,sin,C2,1,54.541,no,Seq Scan(lecturavibracion)
+100k,sin,C2,2,54.572,no,Seq Scan(lecturavibracion)
+100k,sin,C2,3,54.140,no,Seq Scan(lecturavibracion)
+100k,sin,C2,4,54.030,no,Seq Scan(lecturavibracion)
+100k,sin,C2,5,53.780,no,Seq Scan(lecturavibracion)
+100k,sin,C2s,1,15.449,no,Seq Scan(lecturavibracion)
+100k,sin,C2s,2,15.750,no,Seq Scan(lecturavibracion)
+100k,sin,C2s,3,15.388,no,Seq Scan(lecturavibracion)
+100k,sin,C2s,4,15.556,no,Seq Scan(lecturavibracion)
+100k,sin,C2s,5,15.379,no,Seq Scan(lecturavibracion)
+100k,sin,C3,1,149.386,no,Seq Scan(lecturavibracion)
+100k,sin,C3,2,150.882,no,Seq Scan(lecturavibracion)
+100k,sin,C3,3,149.847,no,Seq Scan(lecturavibracion)
+100k,sin,C3,4,149.917,no,Seq Scan(lecturavibracion)
+100k,sin,C3,5,151.063,no,Seq Scan(lecturavibracion)
+100k,sin,C4,1,1234.451,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+100k,sin,C4,2,1229.780,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+100k,sin,C4,3,1232.847,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+100k,sin,C4,4,1298.797,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+100k,sin,C4,5,1245.274,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+100k,sin,C5,1,5953.030,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)
+100k,sin,C5,2,5935.451,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)
+100k,sin,C5,3,5926.137,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)
+100k,sin,C5,4,5984.415,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)
+100k,sin,C5,5,6042.346,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)
+100k,teoria,C1,1,4.793,si,Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+100k,teoria,C1,2,5.012,si,Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+100k,teoria,C1,3,4.743,si,Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+100k,teoria,C1,4,4.605,si,Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+100k,teoria,C1,5,5.128,si,Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+100k,teoria,C2,1,47.758,no,Seq Scan(lecturavibracion)
+100k,teoria,C2,2,46.401,no,Seq Scan(lecturavibracion)
+100k,teoria,C2,3,46.603,no,Seq Scan(lecturavibracion)
+100k,teoria,C2,4,46.236,no,Seq Scan(lecturavibracion)
+100k,teoria,C2,5,48.667,no,Seq Scan(lecturavibracion)
+100k,teoria,C2s,1,10.952,si,Index Scan[idx_btree_lectura_fecha]
+100k,teoria,C2s,2,12.030,si,Index Scan[idx_btree_lectura_fecha]
+100k,teoria,C2s,3,22.617,si,Index Scan[idx_btree_lectura_fecha]
+100k,teoria,C2s,4,22.751,si,Index Scan[idx_btree_lectura_fecha]
+100k,teoria,C2s,5,12.580,si,Index Scan[idx_btree_lectura_fecha]
+100k,teoria,C3,1,119.475,si,Index Only Scan[idx_btree_lectura_sensor_fecha]
+100k,teoria,C3,2,119.642,si,Index Only Scan[idx_btree_lectura_sensor_fecha]
+100k,teoria,C3,3,120.608,si,Index Only Scan[idx_btree_lectura_sensor_fecha]
+100k,teoria,C3,4,119.399,si,Index Only Scan[idx_btree_lectura_sensor_fecha]
+100k,teoria,C3,5,119.875,si,Index Only Scan[idx_btree_lectura_sensor_fecha]
+100k,teoria,C4,1,3.393,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+100k,teoria,C4,2,3.119,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+100k,teoria,C4,3,3.055,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+100k,teoria,C4,4,3.040,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+100k,teoria,C4,5,3.298,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+100k,teoria,C5,1,5.001,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)
+100k,teoria,C5,2,5.194,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)
+100k,teoria,C5,3,5.393,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)
+100k,teoria,C5,4,4.922,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)
+100k,teoria,C5,5,4.876,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)
+1m,sin,C1,1,182564.261,no,Seq Scan(lecturavibracion)
+1m,sin,C2,1,128.379,no,Seq Scan(lecturavibracion)
+1m,sin,C2,2,127.780,no,Seq Scan(lecturavibracion)
+1m,sin,C2,3,134.126,no,Seq Scan(lecturavibracion)
+1m,sin,C2,4,138.137,no,Seq Scan(lecturavibracion)
+1m,sin,C2,5,140.599,no,Seq Scan(lecturavibracion)
+1m,sin,C2s,1,38.584,no,Seq Scan(lecturavibracion)
+1m,sin,C2s,2,39.804,no,Seq Scan(lecturavibracion)
+1m,sin,C2s,3,70.094,no,Seq Scan(lecturavibracion)
+1m,sin,C2s,4,49.700,no,Seq Scan(lecturavibracion)
+1m,sin,C2s,5,43.096,no,Seq Scan(lecturavibracion)
+1m,sin,C3,1,1353.027,no,Seq Scan(lecturavibracion)
+1m,sin,C3,2,1352.057,no,Seq Scan(lecturavibracion)
+1m,sin,C3,3,1344.163,no,Seq Scan(lecturavibracion)
+1m,sin,C3,4,1344.508,no,Seq Scan(lecturavibracion)
+1m,sin,C3,5,1342.982,no,Seq Scan(lecturavibracion)
+1m,sin,C4,1,108839.437,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+1m,sin,C4,2,93972.583,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+1m,sin,C4,3,96728.289,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+1m,sin,C4,4,91651.065,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+1m,sin,C4,5,84063.682,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+1m,sin,C5,1,556947.278,no,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)
+1m,teoria,C1,1,52.204,si,Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+1m,teoria,C1,2,51.742,si,Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+1m,teoria,C1,3,50.770,si,Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+1m,teoria,C1,4,52.778,si,Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+1m,teoria,C1,5,51.299,si,Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+1m,teoria,C2,1,155.074,no,Seq Scan(lecturavibracion)
+1m,teoria,C2,2,133.089,no,Seq Scan(lecturavibracion)
+1m,teoria,C2,3,133.722,no,Seq Scan(lecturavibracion)
+1m,teoria,C2,4,134.493,no,Seq Scan(lecturavibracion)
+1m,teoria,C2,5,136.691,no,Seq Scan(lecturavibracion)
+1m,teoria,C2s,1,12.551,si,Index Scan[idx_btree_lectura_fecha]
+1m,teoria,C2s,2,12.803,si,Index Scan[idx_btree_lectura_fecha]
+1m,teoria,C2s,3,12.930,si,Index Scan[idx_btree_lectura_fecha]
+1m,teoria,C2s,4,12.774,si,Index Scan[idx_btree_lectura_fecha]
+1m,teoria,C2s,5,12.861,si,Index Scan[idx_btree_lectura_fecha]
+1m,teoria,C3,1,1261.124,si,Index Only Scan[idx_btree_lectura_sensor_fecha]
+1m,teoria,C3,2,1249.578,si,Index Only Scan[idx_btree_lectura_sensor_fecha]
+1m,teoria,C3,3,1275.195,si,Index Only Scan[idx_btree_lectura_sensor_fecha]
+1m,teoria,C3,4,1247.583,si,Index Only Scan[idx_btree_lectura_sensor_fecha]
+1m,teoria,C3,5,1243.276,si,Index Only Scan[idx_btree_lectura_sensor_fecha]
+1m,teoria,C4,1,39.032,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+1m,teoria,C4,2,38.523,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+1m,teoria,C4,3,39.248,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+1m,teoria,C4,4,34.334,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+1m,teoria,C4,5,36.171,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+1m,teoria,C5,1,69.292,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)
+1m,teoria,C5,2,68.783,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)
+1m,teoria,C5,3,82.068,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)
+1m,teoria,C5,4,87.787,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)
+1m,teoria,C5,5,75.378,si,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)

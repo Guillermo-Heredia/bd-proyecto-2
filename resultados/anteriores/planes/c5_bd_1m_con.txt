@@ -1,0 +1,30 @@
+                                                                                QUERY PLAN                                                                                
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=126.35..126.39 rows=17 width=70) (actual time=0.386..0.389 rows=16 loops=1)
+   Sort Key: o.fecha_creacion
+   Sort Method: quicksort  Memory: 26kB
+   ->  Hash Left Join  (cost=40.83..126.00 rows=17 width=70) (actual time=0.125..0.362 rows=16 loops=1)
+         Hash Cond: (o.id_tecnico = tc.id_tecnico)
+         ->  Nested Loop Left Join  (cost=39.16..124.28 rows=17 width=64) (actual time=0.100..0.334 rows=16 loops=1)
+               ->  Nested Loop  (cost=38.73..71.71 rows=17 width=62) (actual time=0.087..0.270 rows=16 loops=1)
+                     ->  Hash Join  (cost=38.45..61.37 rows=17 width=44) (actual time=0.075..0.207 rows=16 loops=1)
+                           Hash Cond: (ao.id_orden = o.id_orden)
+                           ->  Seq Scan on alertaorden ao  (cost=0.00..19.60 rows=1260 width=16) (actual time=0.002..0.066 rows=1260 loops=1)
+                           ->  Hash  (cost=38.11..38.11 rows=27 width=36) (actual time=0.063..0.063 rows=27 loops=1)
+                                 Buckets: 1024  Batches: 1  Memory Usage: 10kB
+                                 ->  Bitmap Heap Scan on ordentrabajo o  (cost=4.49..38.11 rows=27 width=36) (actual time=0.016..0.053 rows=27 loops=1)
+                                       Recheck Cond: (id_turbina = 7)
+                                       Heap Blocks: exact=20
+                                       ->  Bitmap Index Scan on idx_orden_turbina  (cost=0.00..4.48 rows=27 width=0) (actual time=0.010..0.010 rows=27 loops=1)
+                                             Index Cond: (id_turbina = 7)
+                     ->  Index Scan using alertamantenimiento_pkey on alertamantenimiento a  (cost=0.28..0.61 rows=1 width=26) (actual time=0.003..0.003 rows=1 loops=16)
+                           Index Cond: (id_alerta = ao.id_alerta)
+               ->  Index Only Scan using idx_lectura_sensor_fecha_rms on lecturavibracion l  (cost=0.42..3.09 rows=1 width=18) (actual time=0.004..0.004 rows=1 loops=16)
+                     Index Cond: ((id_sensor = a.id_sensor) AND (fecha_hora = a.fecha_hora_lectura))
+                     Heap Fetches: 0
+         ->  Hash  (cost=1.30..1.30 rows=30 width=14) (actual time=0.012..0.013 rows=30 loops=1)
+               Buckets: 1024  Batches: 1  Memory Usage: 10kB
+               ->  Seq Scan on tecnico tc  (cost=0.00..1.30 rows=30 width=14) (actual time=0.004..0.007 rows=30 loops=1)
+ Planning Time: 1.437 ms
+ Execution Time: 0.490 ms
+(27 rows)

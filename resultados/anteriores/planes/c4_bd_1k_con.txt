@@ -1,0 +1,37 @@
+                                                                                            QUERY PLAN                                                                                             
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=23.88..23.89 rows=5 width=42) (actual time=0.264..0.267 rows=5 loops=1)
+   Sort Key: x.parque, x.rk
+   Sort Method: quicksort  Memory: 25kB
+   ->  Subquery Scan on x  (cost=23.39..23.82 rows=5 width=42) (actual time=0.215..0.222 rows=5 loops=1)
+         ->  WindowAgg  (cost=23.39..23.77 rows=5 width=46) (actual time=0.215..0.220 rows=5 loops=1)
+               Run Condition: (rank() OVER (?) <= 3)
+               ->  Incremental Sort  (cost=23.39..23.68 rows=5 width=38) (actual time=0.208..0.210 rows=5 loops=1)
+                     Sort Key: p.id_parque, (count(*)) DESC
+                     Presorted Key: p.id_parque
+                     Full-sort Groups: 1  Sort Method: quicksort  Average Memory: 25kB  Peak Memory: 25kB
+                     ->  GroupAggregate  (cost=23.36..23.46 rows=5 width=38) (actual time=0.192..0.196 rows=5 loops=1)
+                           Group Key: p.id_parque, c.nombre
+                           ->  Sort  (cost=23.36..23.37 rows=5 width=30) (actual time=0.188..0.189 rows=5 loops=1)
+                                 Sort Key: p.id_parque, c.nombre
+                                 Sort Method: quicksort  Memory: 25kB
+                                 ->  Hash Join  (cost=2.52..23.30 rows=5 width=30) (actual time=0.102..0.172 rows=5 loops=1)
+                                       Hash Cond: (t.id_parque = p.id_parque)
+                                       ->  Nested Loop  (cost=1.40..22.16 rows=5 width=21) (actual time=0.075..0.144 rows=5 loops=1)
+                                             ->  Nested Loop  (cost=1.26..21.16 rows=5 width=21) (actual time=0.068..0.132 rows=5 loops=1)
+                                                   ->  Hash Join  (cost=1.11..20.16 rows=5 width=4) (actual time=0.053..0.111 rows=5 loops=1)
+                                                         Hash Cond: (s.id_sensor = a.id_sensor)
+                                                         ->  Seq Scan on sensorvibracion s  (cost=0.00..16.00 rows=800 width=8) (actual time=0.005..0.051 rows=800 loops=1)
+                                                         ->  Hash  (cost=1.05..1.05 rows=5 width=4) (actual time=0.004..0.004 rows=5 loops=1)
+                                                               Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                                                               ->  Seq Scan on alertamantenimiento a  (cost=0.00..1.05 rows=5 width=4) (actual time=0.001..0.002 rows=5 loops=1)
+                                                   ->  Index Scan using componenteturbina_pkey on componenteturbina c  (cost=0.15..0.20 rows=1 width=25) (actual time=0.004..0.004 rows=1 loops=5)
+                                                         Index Cond: (id_componente = s.id_componente)
+                                             ->  Index Scan using turbina_pkey on turbina t  (cost=0.14..0.20 rows=1 width=8) (actual time=0.002..0.002 rows=1 loops=5)
+                                                   Index Cond: (id_turbina = c.id_turbina)
+                                       ->  Hash  (cost=1.05..1.05 rows=5 width=13) (actual time=0.014..0.014 rows=5 loops=1)
+                                             Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                                             ->  Seq Scan on parqueeolico p  (cost=0.00..1.05 rows=5 width=13) (actual time=0.008..0.009 rows=5 loops=1)
+ Planning Time: 1.248 ms
+ Execution Time: 0.423 ms
+(34 rows)

@@ -1,0 +1,18 @@
+                                                                               QUERY PLAN                                                                               
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=3672.47..3674.47 rows=800 width=109) (actual time=63.067..63.118 rows=800 loops=1)
+   Sort Key: (max(l.valor_rms)) DESC
+   Sort Method: quicksort  Memory: 75kB
+   ->  HashAggregate  (cost=3623.89..3633.89 rows=800 width=109) (actual time=62.328..62.685 rows=800 loops=1)
+         Group Key: s.id_sensor
+         Batches: 1  Memory Usage: 553kB
+         ->  Hash Join  (cost=26.00..2623.89 rows=100000 width=25) (actual time=0.200..31.379 rows=100000 loops=1)
+               Hash Cond: (l.id_sensor = s.id_sensor)
+               ->  Seq Scan on lecturavibracion l  (cost=0.00..2334.00 rows=100000 width=16) (actual time=0.007..12.168 rows=100000 loops=1)
+                     Filter: ((fecha_hora >= '2026-01-01 00:00:00'::timestamp without time zone) AND (fecha_hora < '2026-02-01 00:00:00'::timestamp without time zone))
+               ->  Hash  (cost=16.00..16.00 rows=800 width=13) (actual time=0.184..0.185 rows=800 loops=1)
+                     Buckets: 1024  Batches: 1  Memory Usage: 46kB
+                     ->  Seq Scan on sensorvibracion s  (cost=0.00..16.00 rows=800 width=13) (actual time=0.005..0.072 rows=800 loops=1)
+ Planning Time: 1.053 ms
+ Execution Time: 63.290 ms
+(15 rows)

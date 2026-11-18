@@ -1,0 +1,26 @@
+                                                                          QUERY PLAN                                                                           
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=1860.52..1861.35 rows=333 width=36) (actual time=12.146..12.150 rows=61 loops=1)
+   Sort Key: (count(*)) DESC
+   Sort Method: quicksort  Memory: 28kB
+   ->  HashAggregate  (cost=1834.08..1846.57 rows=333 width=36) (actual time=11.934..12.124 rows=61 loops=1)
+         Group Key: marcadas.id_sensor, marcadas.grp
+         Filter: (count(*) >= 3)
+         Batches: 1  Memory Usage: 321kB
+         Rows Removed by Filter: 1597
+         ->  Subquery Scan on marcadas  (cost=873.93..1771.58 rows=5000 width=20) (actual time=3.979..11.356 rows=2032 loops=1)
+               Filter: marcadas.sobre
+               Rows Removed by Filter: 7968
+               ->  WindowAgg  (cost=873.93..1671.58 rows=10000 width=21) (actual time=3.977..10.966 rows=10000 loops=1)
+                     ->  Incremental Sort  (cost=873.93..1446.58 rows=10000 width=21) (actual time=3.975..8.903 rows=10000 loops=1)
+                           Sort Key: lecturavibracion.id_sensor, lecturavibracion.fecha_hora
+                           Presorted Key: lecturavibracion.id_sensor
+                           Full-sort Groups: 267  Sort Method: quicksort  Average Memory: 27kB  Peak Memory: 27kB
+                           ->  WindowAgg  (cost=873.39..1123.39 rows=10000 width=21) (actual time=3.923..6.675 rows=10000 loops=1)
+                                 ->  Sort  (cost=873.39..898.39 rows=10000 width=13) (actual time=3.916..4.353 rows=10000 loops=1)
+                                       Sort Key: lecturavibracion.id_sensor, ((lecturavibracion.valor_rms > 2.5)), lecturavibracion.fecha_hora
+                                       Sort Method: quicksort  Memory: 853kB
+                                       ->  Seq Scan on lecturavibracion  (cost=0.00..209.00 rows=10000 width=13) (actual time=0.005..1.325 rows=10000 loops=1)
+ Planning Time: 0.310 ms
+ Execution Time: 12.317 ms
+(23 rows)

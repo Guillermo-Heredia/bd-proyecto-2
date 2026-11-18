@@ -1,0 +1,538 @@
+
+\section{Optimización y Experimentación}
+
+\subsection{Consultas SQL para el experimento}
+
+\subsubsection{Descripción de las 5 consultas intermedias seleccionadas (no triviales)}
+
+Las cinco consultas trabajan sobre \texttt{LecturaVibracion}, la tabla que crece
+con la escala, y responden preguntas de mantenimiento predictivo.
+
+\textbf{Consulta 1:} ¿Qué lecturas anómalas (RMS $\ge 4$) superan en 1.5 veces o
+más el promedio de las 24 horas previas de su mismo sensor?
+
+\textit{Justificación:} detecta picos que no son ruido aislado sino un salto
+frente al historial reciente del sensor, y los ubica en su turbina y parque.
+
+\textbf{Consulta 2:} En las últimas 48 horas, ¿qué sensores vibran más que el
+promedio de su parque? (top 5 por parque)
+
+\textit{Justificación:} compara cada sensor contra sus pares del mismo parque
+para priorizar la revisión de los que se salen del comportamiento conjunto.
+
+\textbf{Consulta 3:} ¿Qué turbinas tienen más rachas de tres o más lecturas
+consecutivas con RMS $> 2.5$? (top 10)
+
+\textit{Justificación:} una lectura alta aislada puede ser ruido; una racha
+sostenida indica deterioro real del componente.
+
+\textbf{Consulta 4:} ¿Cómo venía la vibración en las cinco lecturas previas a
+cada alerta grave? (por parque y componente)
+
+\textit{Justificación:} mide la tendencia (pendiente) antes de la alerta para
+distinguir fallas progresivas de eventos súbitos.
+
+\textbf{Consulta 5:} ¿Qué turbinas pasan más rápido de ``normal'' a ``alerta''?
+(top 10, incluyendo alertas sin orden de trabajo)
+
+\textit{Justificación:} cuantifica la velocidad de degradación y detecta
+alertas que todavía no tienen una orden asociada.
+
+\subsubsection{Implementación de consultas en SQL}
+
+\textbf{Consulta 1: Lecturas anómalas frente a su historial de 24 h}
+\lstinputlisting[language=SQL]{consultas_limpias/c1.sql}
+
+\textbf{Consulta 2: Sensores por encima del promedio de su parque (48 h)}
+\lstinputlisting[language=SQL]{consultas_limpias/c2.sql}
+
+\textbf{Consulta 3: Rachas de vibración alta por turbina}
+\lstinputlisting[language=SQL]{consultas_limpias/c3.sql}
+
+\textbf{Consulta 4: Tendencia previa a las alertas graves}
+\lstinputlisting[language=SQL]{consultas_limpias/c4.sql}
+
+\textbf{Consulta 5: Velocidad de degradación de cada turbina}
+\lstinputlisting[language=SQL]{consultas_limpias/c5.sql}
+
+\subsection{Metodología del experimento}
+
+Para que la comparación sea válida, la variante \emph{sin índices} no se limita
+a borrar los índices creados por el proyecto: también se desactiva el uso de los
+índices automáticos de llave primaria y \texttt{UNIQUE} en la sesión, porque
+PostgreSQL los aprovechaba y la prueba dejaba de ser ``sin índices''. El
+procedimiento fue:
+
+\begin{enumerate}
+    \item \textbf{Preparación:} se parte de las bases \texttt{bd\_1k},
+    \texttt{bd\_10k}, \texttt{bd\_100k} y \texttt{bd\_1m}, generadas con
+    \texttt{crear\_todo.sh}, y se ejecuta \texttt{ANALYZE} para actualizar las
+    estadísticas del planificador.
+
+    \item \textbf{Sin índices:} se eliminan todos los índices \texttt{idx\_*} y,
+    en la misma sesión, se ejecuta
+    \begin{lstlisting}[language=SQL]
+SET enable_indexscan = off;
+SET enable_indexonlyscan = off;
+SET enable_bitmapscan = off;
+    \end{lstlisting}
+    Así el planificador solo puede usar \texttt{Seq Scan}. El programa verifica
+    en cada plan que la variante ``sin'' no use ningún índice.
+
+    \item \textbf{Calentamiento:} antes de medir se ejecuta la consulta una vez
+    para llevar los datos a la caché compartida.
+
+    \item \textbf{Repeticiones:} se ejecutan 5 veces por consulta, escala y
+    variante. Cada valor de las tablas es una ejecución; el promedio y la
+    desviación estándar se calculan sobre esas 5 corridas. Si una corrida supera
+    los 120\,s se mide una sola vez ($n=1$) para no extender el experimento; es
+    el caso de C1 y C5 con 1M sin índices.
+
+    \item \textbf{Con índices:} se ejecuta \texttt{indices/crear\_indices.sql}
+    (índices elegidos por teoría) y se repite la misma medición en una sesión
+    limpia.
+
+    \item \textbf{Medición:} todo se hace con \texttt{benchmark.py} en una sola
+    sesión de \texttt{psycopg} por variante, registrando el tiempo de ejecución
+    y el tipo de acceso del plan. Los planes que se muestran en el informe se
+    obtienen con \texttt{EXPLAIN (ANALYZE, BUFFERS)} en pgAdmin.
+\end{enumerate}
+
+\subsection{Optimización de consultas}
+
+La regla usada para elegir cada índice es la siguiente: la igualdad
+($=$, \texttt{IN}, join por llave) va con \textbf{Hash}; el rango, la
+desigualdad y el orden ($<$, $>$, $\ge$, \texttt{ORDER BY},
+\texttt{PARTITION BY \dots ORDER BY}) van con \textbf{B+ tree}; si hay igualdad
+y rango en varias columnas se usa B+ tree, porque Hash solo indexa una columna y
+solo sirve para igualdad. En PostgreSQL, \texttt{CREATE INDEX} sin
+\texttt{USING} crea un B-tree, que es un B+ tree.
+
+\subsubsection{Planes de índices para Consulta 1}
+\begin{lstlisting}[language=SQL]
+CREATE INDEX idx_btree_lectura_sensor_fecha
+  ON LecturaVibracion (id_sensor, fecha_hora) INCLUDE (valor_rms);
+
+CREATE INDEX idx_btree_lectura_rms
+  ON LecturaVibracion (valor_rms);
+\end{lstlisting}
+La subconsulta correlacionada busca \texttt{(id\_sensor, fecha\_hora)} en un
+rango de 24 h (B+ tree) y el filtro \texttt{valor\_rms >= 4} usa el B+ tree
+sobre \texttt{valor\_rms}.
+
+\subsubsection{Planes de índices para Consulta 2}
+\begin{lstlisting}[language=SQL]
+CREATE INDEX idx_btree_lectura_fecha
+  ON LecturaVibracion (fecha_hora) INCLUDE (id_sensor, valor_rms, valor_pico);
+\end{lstlisting}
+El predicado es un rango de 48 h sobre \texttt{fecha\_hora}; el \texttt{INCLUDE}
+permite un \texttt{Index Only Scan} sin volver a la tabla.
+
+\subsubsection{Planes de índices para Consulta 3}
+\begin{lstlisting}[language=SQL]
+CREATE INDEX idx_btree_lectura_sensor_fecha
+  ON LecturaVibracion (id_sensor, fecha_hora) INCLUDE (valor_rms);
+\end{lstlisting}
+Las ventanas necesitan las lecturas ordenadas por sensor y fecha; el B+ tree las
+entrega en ese orden (evita el \texttt{Sort} de toda la tabla).
+
+\subsubsection{Planes de índices para Consulta 4}
+\begin{lstlisting}[language=SQL]
+CREATE INDEX idx_btree_lectura_sensor_fecha
+  ON LecturaVibracion (id_sensor, fecha_hora) INCLUDE (valor_rms);
+
+CREATE INDEX idx_hash_alerta_nivel
+  ON AlertaMantenimiento USING hash (nivel);
+\end{lstlisting}
+El \texttt{JOIN LATERAL} busca las 5 lecturas anteriores de un sensor
+(igualdad + orden) y el filtro \texttt{nivel IN ('Alta','Critica')} es igualdad
+(Hash).
+
+\subsubsection{Planes de índices para Consulta 5}
+\begin{lstlisting}[language=SQL]
+CREATE INDEX idx_btree_lectura_sensor_fecha
+  ON LecturaVibracion (id_sensor, fecha_hora) INCLUDE (valor_rms);
+
+CREATE INDEX idx_hash_alertaorden_alerta
+  ON AlertaOrden USING hash (id_alerta);
+\end{lstlisting}
+Cada alerta busca la última lectura normal anterior a una fecha (igualdad +
+rango) y el \texttt{NOT EXISTS} resuelve \texttt{ao.id\_alerta = a.id\_alerta}
+por igualdad.
+
+\paragraph{Índices de las llaves foráneas.} Los joins por llave foránea se apoyan en índices Hash:
+\texttt{SensorVibracion(id\_componente)},
+\texttt{ComponenteTurbina(id\_turbina)} y \texttt{Turbina(id\_parque)}. El
+conjunto completo de índices está en el repositorio del proyecto.
+
+\subsection{Plataforma de Pruebas}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Hardware y software utilizado}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Componente} & \textbf{Descripción} \\ \hline
+Memoria física instalada (RAM) & 12 GB \\ \hline
+Procesador & Intel Core i5-1035G4 @ 1.10 GHz (4 núcleos / 8 hilos) \\ \hline
+Almacenamiento & SSD NVMe SK Hynix 512 GB \\ \hline
+Sistema Operativo & Fedora Linux 44 Workstation (kernel 7.3.3) \\ \hline
+pgAdmin & pgAdmin 4 v9.19 \\ \hline
+PostgreSQL & PostgreSQL 16.15 \\ \hline
+\end{tabular}
+\end{table}
+
+\subsection{Medición de tiempos}
+
+Se registra el \textit{Execution Time} de \texttt{EXPLAIN ANALYZE} en
+milisegundos. Cada tabla muestra las cinco ejecuciones por escala, su promedio
+y su desviación estándar.
+
+\subsubsection{Sin índices}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Tiempos de ejecución --- Consulta 1 --- Sin índices}
+\begin{tabular}{|c|r|r|r|r|}
+\hline
+\textbf{Ejecución} & \textbf{1k (ms)} & \textbf{10k (ms)} & \textbf{100k (ms)} & \textbf{1M (ms)} \\ \hline
+1 & 0.375 & 23.43 & 2\,178.3 & 197\,558.0 \\ \hline
+2 & 0.344 & 23.50 & 2\,175.0 & \textit{--} \\ \hline
+3 & 0.328 & 24.49 & 2\,033.0 & \textit{--} \\ \hline
+4 & 0.311 & 25.32 & 1\,882.1 & \textit{--} \\ \hline
+5 & 0.366 & 24.18 & 1\,871.4 & \textit{--} \\ \hline
+\textbf{Promedio} & 0.345 & 24.18 & 2\,028.0 & 197\,558.0 \\ \hline
+\textbf{Desviación estándar} & 0.026 & 0.775 & 150.03 & 0.000 \\ \hline
+\end{tabular}
+\par\footnotesize En 1M la corrida sin índices superó el umbral de 120\,s, por lo que se midió una sola vez ($n=1$); las celdas restantes no aplican.
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Tiempos de ejecución --- Consulta 2 --- Sin índices}
+\begin{tabular}{|c|r|r|r|r|}
+\hline
+\textbf{Ejecución} & \textbf{1k (ms)} & \textbf{10k (ms)} & \textbf{100k (ms)} & \textbf{1M (ms)} \\ \hline
+1 & 3.526 & 14.87 & 59.23 & 167.53 \\ \hline
+2 & 3.574 & 15.22 & 59.17 & 167.03 \\ \hline
+3 & 3.375 & 13.84 & 59.02 & 161.30 \\ \hline
+4 & 3.302 & 13.75 & 59.49 & 167.33 \\ \hline
+5 & 3.705 & 14.10 & 62.93 & 166.65 \\ \hline
+\textbf{Promedio} & 3.496 & 14.36 & 59.97 & 165.97 \\ \hline
+\textbf{Desviación estándar} & 0.160 & 0.656 & 1.665 & 2.629 \\ \hline
+\end{tabular}
+
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Tiempos de ejecución --- Consulta 3 --- Sin índices}
+\begin{tabular}{|c|r|r|r|r|}
+\hline
+\textbf{Ejecución} & \textbf{1k (ms)} & \textbf{10k (ms)} & \textbf{100k (ms)} & \textbf{1M (ms)} \\ \hline
+1 & 1.390 & 13.04 & 147.75 & 1\,639.1 \\ \hline
+2 & 1.384 & 12.86 & 147.31 & 1\,671.0 \\ \hline
+3 & 1.391 & 13.69 & 149.32 & 1\,643.4 \\ \hline
+4 & 1.471 & 13.21 & 149.03 & 1\,638.2 \\ \hline
+5 & 1.477 & 12.97 & 148.74 & 1\,637.9 \\ \hline
+\textbf{Promedio} & 1.423 & 13.15 & 148.43 & 1\,645.9 \\ \hline
+\textbf{Desviación estándar} & 0.047 & 0.324 & 0.863 & 14.19 \\ \hline
+\end{tabular}
+
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Tiempos de ejecución --- Consulta 4 --- Sin índices}
+\begin{tabular}{|c|r|r|r|r|}
+\hline
+\textbf{Ejecución} & \textbf{1k (ms)} & \textbf{10k (ms)} & \textbf{100k (ms)} & \textbf{1M (ms)} \\ \hline
+1 & 0.445 & 10.46 & 1\,102.7 & 90\,218.5 \\ \hline
+2 & 0.340 & 10.71 & 1\,101.4 & 89\,129.8 \\ \hline
+3 & 0.425 & 10.46 & 1\,150.9 & 95\,441.7 \\ \hline
+4 & 0.331 & 11.43 & 1\,107.8 & 94\,191.3 \\ \hline
+5 & 0.339 & 10.46 & 1\,111.3 & 93\,882.1 \\ \hline
+\textbf{Promedio} & 0.376 & 10.70 & 1\,114.8 & 92\,572.7 \\ \hline
+\textbf{Desviación estándar} & 0.054 & 0.419 & 20.53 & 2\,736.9 \\ \hline
+\end{tabular}
+
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Tiempos de ejecución --- Consulta 5 --- Sin índices}
+\begin{tabular}{|c|r|r|r|r|}
+\hline
+\textbf{Ejecución} & \textbf{1k (ms)} & \textbf{10k (ms)} & \textbf{100k (ms)} & \textbf{1M (ms)} \\ \hline
+1 & 0.469 & 74.80 & 5\,955.2 & 575\,110.5 \\ \hline
+2 & 0.460 & 74.50 & 5\,910.3 & \textit{--} \\ \hline
+3 & 0.455 & 75.06 & 5\,903.5 & \textit{--} \\ \hline
+4 & 0.455 & 74.84 & 5\,906.8 & \textit{--} \\ \hline
+5 & 0.451 & 74.90 & 5\,989.5 & \textit{--} \\ \hline
+\textbf{Promedio} & 0.458 & 74.82 & 5\,933.1 & 575\,110.5 \\ \hline
+\textbf{Desviación estándar} & 0.007 & 0.203 & 37.93 & 0.000 \\ \hline
+\end{tabular}
+\par\footnotesize En 1M la corrida sin índices superó el umbral de 120\,s, por lo que se midió una sola vez ($n=1$); las celdas restantes no aplican.
+\end{table}
+
+
+\subsubsection{Con índices}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Tiempos de ejecución --- Consulta 1 --- Con índices}
+\begin{tabular}{|c|r|r|r|r|}
+\hline
+\textbf{Ejecución} & \textbf{1k (ms)} & \textbf{10k (ms)} & \textbf{100k (ms)} & \textbf{1M (ms)} \\ \hline
+1 & 0.055 & 0.556 & 5.277 & 55.29 \\ \hline
+2 & 0.055 & 0.519 & 4.837 & 55.22 \\ \hline
+3 & 0.050 & 0.538 & 4.921 & 55.27 \\ \hline
+4 & 0.049 & 0.518 & 5.061 & 57.59 \\ \hline
+5 & 0.101 & 0.514 & 4.853 & 56.55 \\ \hline
+\textbf{Promedio} & 0.062 & 0.529 & 4.990 & 55.98 \\ \hline
+\textbf{Desviación estándar} & 0.022 & 0.018 & 0.183 & 1.058 \\ \hline
+\end{tabular}
+
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Tiempos de ejecución --- Consulta 2 --- Con índices}
+\begin{tabular}{|c|r|r|r|r|}
+\hline
+\textbf{Ejecución} & \textbf{1k (ms)} & \textbf{10k (ms)} & \textbf{100k (ms)} & \textbf{1M (ms)} \\ \hline
+1 & 3.613 & 13.25 & 47.04 & 50.01 \\ \hline
+2 & 3.378 & 13.07 & 47.55 & 50.99 \\ \hline
+3 & 3.472 & 13.94 & 48.75 & 50.35 \\ \hline
+4 & 3.340 & 13.84 & 48.15 & 51.31 \\ \hline
+5 & 3.506 & 14.06 & 48.68 & 50.03 \\ \hline
+\textbf{Promedio} & 3.462 & 13.63 & 48.03 & 50.54 \\ \hline
+\textbf{Desviación estándar} & 0.108 & 0.443 & 0.738 & 0.584 \\ \hline
+\end{tabular}
+
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Tiempos de ejecución --- Consulta 3 --- Con índices}
+\begin{tabular}{|c|r|r|r|r|}
+\hline
+\textbf{Ejecución} & \textbf{1k (ms)} & \textbf{10k (ms)} & \textbf{100k (ms)} & \textbf{1M (ms)} \\ \hline
+1 & 1.458 & 13.55 & 144.93 & 1\,438.2 \\ \hline
+2 & 1.353 & 13.61 & 145.69 & 1\,460.0 \\ \hline
+3 & 1.448 & 13.60 & 144.44 & 1\,457.7 \\ \hline
+4 & 1.430 & 13.70 & 143.64 & 1\,430.6 \\ \hline
+5 & 1.287 & 13.60 & 144.24 & 1\,433.0 \\ \hline
+\textbf{Promedio} & 1.395 & 13.61 & 144.59 & 1\,443.9 \\ \hline
+\textbf{Desviación estándar} & 0.073 & 0.057 & 0.772 & 13.96 \\ \hline
+\end{tabular}
+
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Tiempos de ejecución --- Consulta 4 --- Con índices}
+\begin{tabular}{|c|r|r|r|r|}
+\hline
+\textbf{Ejecución} & \textbf{1k (ms)} & \textbf{10k (ms)} & \textbf{100k (ms)} & \textbf{1M (ms)} \\ \hline
+1 & 0.263 & 0.442 & 3.698 & 38.30 \\ \hline
+2 & 0.261 & 0.444 & 3.594 & 38.05 \\ \hline
+3 & 0.228 & 0.463 & 3.456 & 39.02 \\ \hline
+4 & 0.199 & 0.431 & 3.441 & 33.76 \\ \hline
+5 & 0.307 & 0.446 & 3.571 & 32.52 \\ \hline
+\textbf{Promedio} & 0.252 & 0.445 & 3.552 & 36.33 \\ \hline
+\textbf{Desviación estándar} & 0.041 & 0.012 & 0.106 & 2.968 \\ \hline
+\end{tabular}
+
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Tiempos de ejecución --- Consulta 5 --- Con índices}
+\begin{tabular}{|c|r|r|r|r|}
+\hline
+\textbf{Ejecución} & \textbf{1k (ms)} & \textbf{10k (ms)} & \textbf{100k (ms)} & \textbf{1M (ms)} \\ \hline
+1 & 0.061 & 0.722 & 5.695 & 62.10 \\ \hline
+2 & 0.059 & 0.618 & 5.576 & 65.74 \\ \hline
+3 & 0.059 & 0.823 & 5.521 & 84.06 \\ \hline
+4 & 0.058 & 0.632 & 5.666 & 77.21 \\ \hline
+5 & 0.062 & 1.084 & 5.570 & 70.12 \\ \hline
+\textbf{Promedio} & 0.060 & 0.776 & 5.606 & 71.84 \\ \hline
+\textbf{Desviación estándar} & 0.002 & 0.191 & 0.072 & 8.848 \\ \hline
+\end{tabular}
+
+\end{table}
+
+
+\subsection{Resultados}
+
+Para cada consulta se muestran el árbol del plan (\textit{Query Plan Tree}) y el
+plan de ejecución en las cuatro escalas, sin y con índices, seguidos de su
+explicación.
+
+\subsubsection{Consulta 1}
+\resultadoconsulta{1}
+
+\textbf{Sin índices:} por cada lectura anómala hay que promediar las 24 horas
+previas de su sensor, y cada búsqueda recorre la tabla completa. El costo crece
+de forma cuadrática: 0.345 ms (1k), 24.18 ms (10k), 2\,028.0 ms (100k) y
+197\,558.0 ms (1M, $n=1$).
+
+\textbf{Con índices:} el B+ tree \texttt{(id\_sensor, fecha\_hora)} resuelve
+cada ventana de 24 h en un salto y el índice sobre \texttt{valor\_rms} filtra
+las lecturas anómalas. El tiempo baja a 0.062, 0.529, 4.990 y 55.98 ms; con
+1M es aproximadamente 3\,529 veces más rápida. La mejora es real en todas las
+escalas.
+
+
+\subsubsection{Consulta 2}
+\resultadoconsulta{2}
+
+\textbf{Sin índices:} el rango de 48 h se resuelve con un recorrido secuencial
+de \texttt{LecturaVibracion}: 3.496 ms (1k), 14.36 ms (10k), 59.97 ms
+(100k) y 165.97 ms (1M).
+
+\textbf{Con índices:} el B+ tree sobre \texttt{fecha\_hora} con
+\texttt{INCLUDE} permite un \texttt{Index Only Scan} y reduce el tiempo a
+3.462, 13.63, 48.03 y 50.54 ms. Con 1k y 10k la mejora está dentro del
+ruido (-1.0\,\% y -5.1\,\%), porque 48 h abarcan casi toda la tabla; con 100k y 1M el
+rango ya es selectivo y la ganancia crece hasta -69.5\,\% en 1M.
+
+
+\subsubsection{Consulta 3}
+\resultadoconsulta{3}
+
+\textbf{Sin índices:} la consulta no tiene filtro: procesa todas las lecturas y
+calcula dos funciones de ventana, por lo que el tiempo crece con el volumen:
+1.423 ms (1k), 13.15 ms (10k), 148.43 ms (100k) y 1\,645.9 ms (1M).
+
+\textbf{Con índices:} el B+ tree \texttt{(id\_sensor, fecha\_hora)} entrega las
+filas ya ordenadas y evita el \texttt{Sort}, pero hay que procesar todas las
+filas igual. El tiempo queda en 1.395, 13.61, 144.59 y 1\,443.9 ms, con una
+mejora de -12.3\,\% en 1M. En 1k el planificador prefiere \texttt{Seq Scan}
+(\texttt{usa\_indice = no}), así que la diferencia es ruido. Es el ejemplo de
+una consulta donde el índice ayuda poco porque necesita todas las filas.
+
+
+\subsubsection{Consulta 4}
+\resultadoconsulta{4}
+
+\textbf{Sin índices:} por cada alerta grave, el \texttt{JOIN LATERAL} busca las
+cinco lecturas anteriores de su sensor; sin índice cada búsqueda recorre toda
+la tabla. El tiempo sube a 0.376 ms (1k), 10.70 ms (10k), 1\,114.8 ms (100k) y
+92\,572.7 ms (1M).
+
+\textbf{Con índices:} el B+ tree sobre \texttt{(id\_sensor, fecha\_hora)}
+permite leer solo las cinco entradas anteriores a cada alerta; el Hash sobre
+\texttt{nivel} filtra las alertas graves. El tiempo baja a 0.252, 0.445,
+3.552 y 36.33 ms, es decir, alrededor de 2\,548 veces menos con 1M.
+
+
+\subsubsection{Consulta 5}
+\resultadoconsulta{5}
+
+\textbf{Sin índices:} por cada alerta hay que buscar la última lectura normal
+anterior a una fecha y comprobar con \texttt{NOT EXISTS} si tiene orden; cada
+búsqueda recorre \texttt{LecturaVibracion} completa y el costo crece de forma
+cuadrática: 0.458 ms (1k), 74.82 ms (10k), 5\,933.1 ms (100k) y 575\,110.5 ms
+(1M, $n=1$).
+
+\textbf{Con índices:} el B+ tree \texttt{(id\_sensor, fecha\_hora)} recorre el
+árbol hacia atrás desde la fecha de la alerta y el Hash sobre
+\texttt{AlertaOrden(id\_alerta)} resuelve el anti-join. El tiempo baja a
+0.060, 0.776, 5.606 y 71.84 ms; con 1M es aproximadamente 8\,005 veces más
+rápida, la mayor ganancia del experimento.
+
+
+
+\subsection{Análisis y Discusión}
+
+
+\begin{table}[H]
+\centering
+\small
+\caption{Tiempo promedio con 1\,000\,000 de lecturas y variación al usar índices}
+\begin{tabular}{|c|r|r|r|r|}
+\hline
+\textbf{Consulta} & \textbf{Sin índices (ms)} & \textbf{Con índices (ms)} & \textbf{Variación} & \textbf{Factor} \\ \hline
+1 & 197\,558.0 & 55.98 & $\approx-100$\,\% & $\approx3\,529\times$ \\ \hline
+2 & 165.97 & 50.54 & $-69.5$\,\% & $\approx3.3\times$ \\ \hline
+3 & 1\,645.9 & 1\,443.9 & $-12.3$\,\% & $\approx1.1\times$ \\ \hline
+4 & 92\,572.7 & 36.33 & $\approx-100$\,\% & $\approx2\,548\times$ \\ \hline
+5 & 575\,110.5 & 71.84 & $\approx-100$\,\% & $\approx8\,005\times$ \\ \hline
+\end{tabular}
+\end{table}
+
+
+Las consultas 1, 4 y 5 hacen una búsqueda por cada alerta o lectura anómala.
+Sin índices, cada búsqueda recorre la tabla completa y el costo crece como
+$N^2$: al pasar de 100k a 1M el tiempo se multiplica por casi 100. Con el B+
+tree el acceso es un salto directo y el tiempo crece de forma aproximadamente
+lineal, de ahí factores de mejora de miles de veces con 1M.
+
+La consulta 2 filtra por un rango de 48 h. Con pocos datos ese rango abarca casi
+toda la tabla y el índice no ayuda; con 1M representa cerca del 4\,\% de las
+filas y la ganancia llega a dos tercios. La consulta 3 recorre todas las filas
+para calcular las ventanas: el índice solo evita el ordenamiento, por eso la
+mejora es pequeña (alrededor de 12\,\% con 1M). Es el caso típico de una
+consulta que necesita todas las filas y donde un índice aporta poco.
+
+Con 1k casi todas las consultas están por debajo de unos pocos milisegundos y
+las diferencias son ruido. Por eso el análisis se concentra en 100k y 1M.
+
+\paragraph{Costo en escrituras.}
+Los índices también cuestan: cada \texttt{INSERT}, \texttt{UPDATE} o
+\texttt{DELETE} debe mantener los B+ tree y los Hash. La tabla siguiente lo
+cuantifica con 1M de lecturas.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Costo de actualización con 1M (ms; cada operación termina en ROLLBACK)}
+\begin{tabular}{|l|r|r|r|}
+\hline
+\textbf{Operación} & \textbf{Sin índices} & \textbf{Con índices} & \textbf{Variación} \\ \hline
+INSERT 1000 lecturas & 24.96 & 16.72 & $-33.0$\,\% \\ \hline
+UPDATE rms 1 día & 170.35 & 271.60 & $+59.4$\,\% \\ \hline
+UPDATE estado alertas & 7.343 & 7.984 & $+8.7$\,\% \\ \hline
+DELETE 1 día $^{\dagger}$ & 958\,585.4 & 5\,956.1 & $-99.4$\,\% \\ \hline
+\end{tabular}
+\par\footnotesize $^{\dagger}$ Medido una sola vez ($n=1$): el anti-join sin índice tardó cerca de 16 minutos.
+\end{table}
+
+
+El \texttt{INSERT} de 1000 lecturas es más barato con índices porque la
+verificación de las llaves foráneas y el trigger encuentran sus filas por Hash
+en lugar de recorrer las tablas. El \texttt{UPDATE} de un día de
+\texttt{valor\_rms} es más caro con índices (+59.4\,\% de variación), porque hay que
+actualizar los B+ tree que incluyen esa columna. Las alertas, al ser una tabla
+pequeña, casi no cambian. La diferencia más grande está en el \texttt{DELETE}
+con anti-join: sin índice tarda cerca de 16 minutos y con índice unos segundos.
+
+\paragraph{Espacio.}
+Con 1M de lecturas, los índices elegidos por teoría ocupan 105.7\,MB, mientras
+que la tabla \texttt{LecturaVibracion} ronda los 65\,MB. Es el precio de las
+ganancias anteriores: el espacio de los índices puede superar al de la tabla que
+los usa.
+
+\paragraph{Escalamiento por encima del millón de registros.}
+Las consultas que recorren toda la tabla (como la 3) crecen en proporción al
+número de filas; las búsquedas por índice crecen mucho más despacio. Con 10
+millones de lecturas, la C5 sin índices pasaría de 9.6 minutos a varias horas,
+mientras que con índices seguiría en el orden de segundos. Para volúmenes
+mayores conviene particionar \texttt{LecturaVibracion} por fecha, mantener
+tablas de resumen y, si el volumen crece mucho más, usar réplicas de lectura.
+La arquitectura cliente-servidor con un solo PostgreSQL es suficiente para
+algunos millones de registros, pero no para cientos de millones sin
+particionamiento.

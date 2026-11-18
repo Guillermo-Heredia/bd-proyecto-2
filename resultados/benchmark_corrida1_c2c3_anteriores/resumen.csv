@@ -1,0 +1,49 @@
+escala,variante,consulta,n,promedio_ms,desv_std_ms,min_ms,max_ms,vs_sin_%,usa_indice,veredicto,acceso
+1k,sin,C1,5,0.342,0.021,0.329,0.380,,no,,Seq Scan(lecturavibracion)
+1k,teoria,C1,5,0.060,0.004,0.054,0.064,-82.3,si,Mejora real,Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+10k,sin,C1,5,25.144,0.736,24.091,26.078,,no,,Seq Scan(lecturavibracion)
+10k,teoria,C1,5,0.504,0.016,0.493,0.532,-98.0,si,Mejora real,Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+100k,sin,C1,5,2103.044,24.761,2070.183,2137.961,,no,,Seq Scan(lecturavibracion)
+100k,teoria,C1,5,4.856,0.211,4.605,5.128,-99.8,si,Mejora real,Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+1m,sin,C1,1,182564.261,0.000,182564.261,182564.261,,no,,Seq Scan(lecturavibracion)
+1m,teoria,C1,5,51.759,0.779,50.770,52.778,-100.0,si,Mejora real,Bitmap Heap Scan(lecturavibracion); Bitmap Index Scan[idx_btree_lectura_rms]; Index Only Scan[idx_btree_lectura_sensor_fecha]
+1k,sin,C2,5,1.323,0.045,1.295,1.404,,no,,Seq Scan(lecturavibracion)
+1k,teoria,C2,5,1.291,0.023,1.252,1.308,-2.4,no,Empate: el plan no usa índices,Seq Scan(lecturavibracion)
+10k,sin,C2,5,5.709,0.063,5.630,5.790,,no,,Seq Scan(lecturavibracion)
+10k,teoria,C2,5,5.666,0.467,5.193,6.437,-0.8,no,Empate: el plan no usa índices,Seq Scan(lecturavibracion)
+100k,sin,C2,5,54.213,0.340,53.780,54.572,,no,,Seq Scan(lecturavibracion)
+100k,teoria,C2,5,47.133,1.045,46.236,48.667,-13.1,no,Empate: el plan no usa índices,Seq Scan(lecturavibracion)
+1m,sin,C2,5,133.804,5.718,127.780,140.599,,no,,Seq Scan(lecturavibracion)
+1m,teoria,C2,5,138.614,9.301,133.089,155.074,+3.6,no,Empate: el plan no usa índices,Seq Scan(lecturavibracion)
+1k,sin,C2s,5,0.061,0.005,0.054,0.066,,no,,Seq Scan(lecturavibracion)
+1k,teoria,C2s,5,0.021,0.005,0.018,0.030,-64.7,si,Mejora real,Index Scan[idx_btree_lectura_fecha]
+10k,sin,C2s,5,0.471,0.069,0.405,0.582,,no,,Seq Scan(lecturavibracion)
+10k,teoria,C2s,5,0.021,0.002,0.019,0.024,-95.6,si,Mejora real,Index Scan[idx_btree_lectura_fecha]
+100k,sin,C2s,5,15.504,0.154,15.379,15.750,,no,,Seq Scan(lecturavibracion)
+100k,teoria,C2s,5,16.186,5.961,10.952,22.751,+4.4,si,Empate: dentro del ruido,Index Scan[idx_btree_lectura_fecha]
+1m,sin,C2s,5,48.256,12.948,38.584,70.094,,no,,Seq Scan(lecturavibracion)
+1m,teoria,C2s,5,12.784,0.143,12.551,12.930,-73.5,si,Mejora real,Index Scan[idx_btree_lectura_fecha]
+1k,sin,C3,5,1.220,0.089,1.092,1.315,,no,,Seq Scan(lecturavibracion)
+1k,teoria,C3,5,1.190,0.030,1.152,1.226,-2.5,no,Empate: el plan no usa índices,Seq Scan(lecturavibracion)
+10k,sin,C3,5,10.947,0.285,10.489,11.220,,no,,Seq Scan(lecturavibracion)
+10k,teoria,C3,5,13.878,3.710,10.844,20.191,+26.8,si,Empate: dentro del ruido,Index Only Scan[idx_btree_lectura_sensor_fecha]
+100k,sin,C3,5,150.219,0.720,149.386,151.063,,no,,Seq Scan(lecturavibracion)
+100k,teoria,C3,5,119.800,0.487,119.399,120.608,-20.2,si,Mejora real,Index Only Scan[idx_btree_lectura_sensor_fecha]
+1m,sin,C3,5,1347.347,4.788,1342.982,1353.027,,no,,Seq Scan(lecturavibracion)
+1m,teoria,C3,5,1255.351,12.909,1243.276,1275.195,-6.8,si,Mejora real,Index Only Scan[idx_btree_lectura_sensor_fecha]
+1k,sin,C4,5,0.396,0.054,0.328,0.445,,no,,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+1k,teoria,C4,5,0.185,0.018,0.162,0.208,-53.3,si,Mejora real,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+10k,sin,C4,5,10.391,0.604,9.696,10.905,,no,,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+10k,teoria,C4,5,0.503,0.047,0.434,0.564,-95.2,si,Mejora real,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+100k,sin,C4,5,1248.230,28.865,1229.780,1298.797,,no,,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+100k,teoria,C4,5,3.181,0.157,3.040,3.393,-99.7,si,Mejora real,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+1m,sin,C4,5,95051.011,9032.967,84063.682,108839.437,,no,,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion)
+1m,teoria,C4,5,37.462,2.135,34.334,39.248,-100.0,si,Mejora real,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]
+1k,sin,C5,5,0.499,0.067,0.447,0.600,,no,,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)
+1k,teoria,C5,5,0.064,0.001,0.062,0.066,-87.2,si,Mejora real,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)
+10k,sin,C5,5,81.118,0.376,80.667,81.504,,no,,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)
+10k,teoria,C5,5,0.910,0.196,0.673,1.214,-98.9,si,Mejora real,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)
+100k,sin,C5,5,5968.276,46.991,5926.137,6042.346,,no,,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)
+100k,teoria,C5,5,5.077,0.214,4.876,5.393,-99.9,si,Mejora real,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)
+1m,sin,C5,1,556947.278,0.000,556947.278,556947.278,,no,,Seq Scan(alertamantenimiento); Seq Scan(lecturavibracion); Seq Scan(alertaorden)
+1m,teoria,C5,5,76.662,8.232,68.783,87.787,-100.0,si,Mejora real,Seq Scan(alertamantenimiento); Index Only Scan[idx_btree_lectura_sensor_fecha]; Seq Scan(alertaorden)

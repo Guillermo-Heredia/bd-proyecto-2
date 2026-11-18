@@ -1,0 +1,28 @@
+                                                                                    QUERY PLAN                                                                                    
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=10.15..10.15 rows=1 width=25) (actual time=0.055..0.056 rows=1 loops=1)
+   Sort Key: (count(*)) DESC
+   Sort Method: quicksort  Memory: 25kB
+   ->  GroupAggregate  (cost=10.11..10.14 rows=1 width=25) (actual time=0.039..0.040 rows=1 loops=1)
+         Group Key: p.nombre, t.codigo
+         ->  Sort  (cost=10.11..10.12 rows=1 width=17) (actual time=0.036..0.037 rows=1 loops=1)
+               Sort Key: p.nombre, t.codigo
+               Sort Method: quicksort  Memory: 25kB
+               ->  Nested Loop  (cost=0.70..10.10 rows=1 width=17) (actual time=0.025..0.026 rows=1 loops=1)
+                     ->  Nested Loop  (cost=0.56..9.79 rows=1 width=12) (actual time=0.021..0.022 rows=1 loops=1)
+                           ->  Nested Loop  (cost=0.42..9.59 rows=1 width=4) (actual time=0.016..0.017 rows=1 loops=1)
+                                 ->  Nested Loop  (cost=0.28..9.39 rows=1 width=4) (actual time=0.009..0.010 rows=1 loops=1)
+                                       ->  Seq Scan on alertamantenimiento a  (cost=0.00..1.07 rows=1 width=4) (actual time=0.005..0.005 rows=1 loops=1)
+                                             Filter: (((nivel)::text = ANY ('{Alta,Critica}'::text[])) AND ((estado)::text <> 'Cerrada'::text))
+                                             Rows Removed by Filter: 4
+                                       ->  Index Scan using sensorvibracion_pkey on sensorvibracion s  (cost=0.28..8.29 rows=1 width=8) (actual time=0.004..0.004 rows=1 loops=1)
+                                             Index Cond: (id_sensor = a.id_sensor)
+                                 ->  Index Scan using componenteturbina_pkey on componenteturbina c  (cost=0.15..0.20 rows=1 width=8) (actual time=0.006..0.006 rows=1 loops=1)
+                                       Index Cond: (id_componente = s.id_componente)
+                           ->  Index Scan using turbina_pkey on turbina t  (cost=0.14..0.20 rows=1 width=16) (actual time=0.005..0.005 rows=1 loops=1)
+                                 Index Cond: (id_turbina = c.id_turbina)
+                     ->  Index Scan using parqueeolico_pkey on parqueeolico p  (cost=0.13..0.27 rows=1 width=13) (actual time=0.003..0.003 rows=1 loops=1)
+                           Index Cond: (id_parque = t.id_parque)
+ Planning Time: 1.157 ms
+ Execution Time: 0.114 ms
+(25 rows)

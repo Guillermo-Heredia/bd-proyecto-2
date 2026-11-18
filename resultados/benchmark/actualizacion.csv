@@ -1,0 +1,37 @@
+escala,variante,operacion,ejecucion,ms
+1m,sin,INSERT 1000 lecturas,1,28.622
+1m,sin,INSERT 1000 lecturas,2,25.051
+1m,sin,INSERT 1000 lecturas,3,22.800
+1m,sin,INSERT 1000 lecturas,4,23.798
+1m,sin,INSERT 1000 lecturas,5,24.528
+1m,sin,UPDATE rms 1 día,1,174.454
+1m,sin,UPDATE rms 1 día,2,173.297
+1m,sin,UPDATE rms 1 día,3,176.812
+1m,sin,UPDATE rms 1 día,4,159.117
+1m,sin,UPDATE rms 1 día,5,168.051
+1m,sin,UPDATE estado alertas,1,12.731
+1m,sin,UPDATE estado alertas,2,5.554
+1m,sin,UPDATE estado alertas,3,5.332
+1m,sin,UPDATE estado alertas,4,5.758
+1m,sin,UPDATE estado alertas,5,7.339
+1m,sin,DELETE 1 día,1,958585.392
+1m,teoria,INSERT 1000 lecturas,1,15.475
+1m,teoria,INSERT 1000 lecturas,2,15.463
+1m,teoria,INSERT 1000 lecturas,3,16.970
+1m,teoria,INSERT 1000 lecturas,4,17.265
+1m,teoria,INSERT 1000 lecturas,5,18.425
+1m,teoria,UPDATE rms 1 día,1,254.250
+1m,teoria,UPDATE rms 1 día,2,254.306
+1m,teoria,UPDATE rms 1 día,3,258.637
+1m,teoria,UPDATE rms 1 día,4,276.414
+1m,teoria,UPDATE rms 1 día,5,314.382
+1m,teoria,UPDATE estado alertas,1,8.141
+1m,teoria,UPDATE estado alertas,2,7.258
+1m,teoria,UPDATE estado alertas,3,7.458
+1m,teoria,UPDATE estado alertas,4,8.542
+1m,teoria,UPDATE estado alertas,5,8.521
+1m,teoria,DELETE 1 día,1,6249.990
+1m,teoria,DELETE 1 día,2,6237.572
+1m,teoria,DELETE 1 día,3,6231.654
+1m,teoria,DELETE 1 día,4,6166.464
+1m,teoria,DELETE 1 día,5,4894.879

@@ -1,0 +1,33 @@
+                                                                                               QUERY PLAN                                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=66.52..66.94 rows=167 width=25) (actual time=0.447..0.451 rows=76 loops=1)
+   Sort Key: (count(*)) DESC
+   Sort Method: quicksort  Memory: 29kB
+   ->  HashAggregate  (cost=58.69..60.36 rows=167 width=25) (actual time=0.399..0.410 rows=76 loops=1)
+         Group Key: p.nombre, t.codigo
+         Batches: 1  Memory Usage: 40kB
+         ->  Hash Join  (cost=32.06..57.43 rows=167 width=17) (actual time=0.192..0.357 rows=159 loops=1)
+               Hash Cond: (t.id_parque = p.id_parque)
+               ->  Hash Join  (cost=30.95..55.52 rows=167 width=12) (actual time=0.173..0.319 rows=159 loops=1)
+                     Hash Cond: (c.id_turbina = t.id_turbina)
+                     ->  Hash Join  (cost=26.70..50.81 rows=167 width=4) (actual time=0.137..0.262 rows=159 loops=1)
+                           Hash Cond: (s.id_componente = c.id_componente)
+                           ->  Hash Join  (cost=12.70..36.37 rows=167 width=4) (actual time=0.048..0.153 rows=159 loops=1)
+                                 Hash Cond: (s.id_sensor = a.id_sensor)
+                                 ->  Seq Scan on sensorvibracion s  (cost=0.00..16.00 rows=800 width=8) (actual time=0.003..0.045 rows=800 loops=1)
+                                 ->  Hash  (cost=10.61..10.61 rows=167 width=4) (actual time=0.034..0.034 rows=159 loops=1)
+                                       Buckets: 1024  Batches: 1  Memory Usage: 14kB
+                                       ->  Index Only Scan using idx_alerta_criticas_abiertas on alertamantenimiento a  (cost=0.14..10.61 rows=167 width=4) (actual time=0.010..0.019 rows=159 loops=1)
+                                             Heap Fetches: 0
+                           ->  Hash  (cost=9.00..9.00 rows=400 width=8) (actual time=0.080..0.080 rows=400 loops=1)
+                                 Buckets: 1024  Batches: 1  Memory Usage: 24kB
+                                 ->  Seq Scan on componenteturbina c  (cost=0.00..9.00 rows=400 width=8) (actual time=0.003..0.034 rows=400 loops=1)
+                     ->  Hash  (cost=3.00..3.00 rows=100 width=16) (actual time=0.027..0.027 rows=100 loops=1)
+                           Buckets: 1024  Batches: 1  Memory Usage: 13kB
+                           ->  Seq Scan on turbina t  (cost=0.00..3.00 rows=100 width=16) (actual time=0.004..0.012 rows=100 loops=1)
+               ->  Hash  (cost=1.05..1.05 rows=5 width=13) (actual time=0.010..0.010 rows=5 loops=1)
+                     Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                     ->  Seq Scan on parqueeolico p  (cost=0.00..1.05 rows=5 width=13) (actual time=0.003..0.004 rows=5 loops=1)
+ Planning Time: 1.201 ms
+ Execution Time: 0.539 ms
+(30 rows)

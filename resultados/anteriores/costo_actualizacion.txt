@@ -1,0 +1,212 @@
+################ 1) SIN ÍNDICES ################
+DROP INDEX
+DROP INDEX
+DROP INDEX
+DROP INDEX
+DROP INDEX
+DROP INDEX
+DROP INDEX
+DROP INDEX
+DROP INDEX
+DROP INDEX
+DROP INDEX
+DROP INDEX
+ANALYZE
+--- INSERT de 1 000 lecturas nuevas (incluye trigger trg_lectura_alerta) ---
+BEGIN
+                                                          QUERY PLAN                                                          
+------------------------------------------------------------------------------------------------------------------------------
+ Insert on lecturavibracion  (cost=0.00..22.50 rows=0 width=0) (actual time=47.143..47.144 rows=0 loops=1)
+   Buffers: shared hit=3758 read=826 dirtied=996 written=1
+   ->  Function Scan on generate_series i  (cost=0.00..22.50 rows=1000 width=60) (actual time=0.082..1.069 rows=1000 loops=1)
+ Planning Time: 0.100 ms
+ Trigger for constraint lecturavibracion_id_sensor_fkey: time=18.958 calls=1000
+ Trigger trg_lectura_alerta: time=5.391 calls=1000
+ Execution Time: 72.097 ms
+(7 rows)
+
+ROLLBACK
+--- UPDATE de valor_rms en un día de lecturas ---
+BEGIN
+                                                                         QUERY PLAN                                                                         
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Update on lecturavibracion  (cost=0.00..23302.23 rows=0 width=0) (actual time=390.055..390.056 rows=0 loops=1)
+   Buffers: shared hit=165943 read=865 dirtied=2165 written=104
+   ->  Seq Scan on lecturavibracion  (cost=0.00..23302.23 rows=18816 width=22) (actual time=0.011..137.842 rows=19200 loops=1)
+         Filter: ((fecha_hora >= '2026-01-01 00:00:00'::timestamp without time zone) AND (fecha_hora < '2026-01-02 00:00:00'::timestamp without time zone))
+         Rows Removed by Filter: 972410
+         Buffers: shared hit=7950 read=384
+ Planning:
+   Buffers: shared hit=14
+ Planning Time: 0.167 ms
+ Execution Time: 390.132 ms
+(10 rows)
+
+ROLLBACK
+--- UPDATE de estado de alertas (cierre masivo de alertas Baja) ---
+BEGIN
+                                                         QUERY PLAN                                                         
+----------------------------------------------------------------------------------------------------------------------------
+ Update on alertamantenimiento  (cost=0.00..143.74 rows=0 width=0) (actual time=21.720..21.721 rows=0 loops=1)
+   Buffers: shared hit=8845 read=5 dirtied=48 written=30
+   ->  Seq Scan on alertamantenimiento  (cost=0.00..143.74 rows=1209 width=64) (actual time=0.010..1.630 rows=1209 loops=1)
+         Filter: ((nivel)::text = 'Baja'::text)
+         Rows Removed by Filter: 3810
+         Buffers: shared hit=81
+ Planning:
+   Buffers: shared hit=14
+ Planning Time: 0.169 ms
+ Execution Time: 21.766 ms
+(10 rows)
+
+ROLLBACK
+--- DELETE de un día de lecturas sin alerta asociada ---
+BEGIN
+                                                                            QUERY PLAN                                                                            
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Delete on lecturavibracion l  (cost=249.80..24495.13 rows=0 width=0) (actual time=193.963..193.968 rows=0 loops=1)
+   Buffers: shared hit=46538 read=352 dirtied=160
+   ->  Hash Anti Join  (cost=249.80..24495.13 rows=1 width=12) (actual time=6.672..154.601 rows=19100 loops=1)
+         Hash Cond: ((l.id_sensor = a.id_sensor) AND (l.fecha_hora = a.fecha_hora_lectura))
+         Buffers: shared hit=8178 read=352
+         ->  Seq Scan on lecturavibracion l  (cost=0.00..23481.05 rows=19107 width=18) (actual time=3.008..138.033 rows=19200 loops=1)
+               Filter: ((fecha_hora >= '2026-01-02 00:00:00'::timestamp without time zone) AND (fecha_hora < '2026-01-03 00:00:00'::timestamp without time zone))
+               Rows Removed by Filter: 972410
+               Buffers: shared hit=8080 read=352
+         ->  Hash  (cost=158.72..158.72 rows=6072 width=18) (actual time=3.641..3.643 rows=4906 loops=1)
+               Buckets: 8192  Batches: 1  Memory Usage: 333kB
+               Buffers: shared hit=98
+               ->  Seq Scan on alertamantenimiento a  (cost=0.00..158.72 rows=6072 width=18) (actual time=0.028..1.783 rows=5019 loops=1)
+                     Buffers: shared hit=98
+ Planning:
+   Buffers: shared hit=88
+ Planning Time: 0.356 ms
+ Trigger for constraint alertamantenimiento_id_sensor_fecha_hora_lectura_fkey: time=9645.182 calls=19100
+ Execution Time: 9845.672 ms
+(19 rows)
+
+ROLLBACK
+################ 2) CON ÍNDICES ################
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+ANALYZE
+--- INSERT de 1 000 lecturas nuevas ---
+BEGIN
+                                                          QUERY PLAN                                                          
+------------------------------------------------------------------------------------------------------------------------------
+ Insert on lecturavibracion  (cost=0.00..22.50 rows=0 width=0) (actual time=9.468..9.468 rows=0 loops=1)
+   Buffers: shared hit=8286 read=831 dirtied=816 written=14
+   ->  Function Scan on generate_series i  (cost=0.00..22.50 rows=1000 width=60) (actual time=0.052..0.316 rows=1000 loops=1)
+ Planning Time: 0.056 ms
+ Trigger for constraint lecturavibracion_id_sensor_fkey: time=5.458 calls=1000
+ Trigger trg_lectura_alerta: time=1.038 calls=1000
+ Execution Time: 16.069 ms
+(7 rows)
+
+ROLLBACK
+--- UPDATE de valor_rms en un día de lecturas ---
+BEGIN
+                                                                           QUERY PLAN                                                                            
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Update on lecturavibracion  (cost=0.42..1057.27 rows=0 width=0) (actual time=348.055..348.056 rows=0 loops=1)
+   Buffers: shared hit=301504 read=1028 dirtied=2265 written=1179
+   ->  Index Scan using idx_lectura_fecha_cubriente on lecturavibracion  (cost=0.42..1057.27 rows=19754 width=22) (actual time=0.009..14.401 rows=19200 loops=1)
+         Index Cond: ((fecha_hora >= '2026-01-01 00:00:00'::timestamp without time zone) AND (fecha_hora < '2026-01-02 00:00:00'::timestamp without time zone))
+         Buffers: shared hit=523 read=47
+ Planning:
+   Buffers: shared hit=14 read=2
+ Planning Time: 0.129 ms
+ Execution Time: 348.080 ms
+(9 rows)
+
+ROLLBACK
+--- UPDATE de estado de alertas ---
+BEGIN
+                                                         QUERY PLAN                                                         
+----------------------------------------------------------------------------------------------------------------------------
+ Update on alertamantenimiento  (cost=0.00..160.74 rows=0 width=0) (actual time=40.060..40.060 rows=0 loops=1)
+   Buffers: shared hit=14469 read=29 dirtied=70 written=41
+   ->  Seq Scan on alertamantenimiento  (cost=0.00..160.74 rows=1209 width=64) (actual time=0.008..0.840 rows=1209 loops=1)
+         Filter: ((nivel)::text = 'Baja'::text)
+         Rows Removed by Filter: 3810
+         Buffers: shared hit=98
+ Planning:
+   Buffers: shared hit=12 read=3
+ Planning Time: 0.192 ms
+ Execution Time: 40.089 ms
+(10 rows)
+
+ROLLBACK
+--- DELETE de un día de lecturas sin alerta asociada ---
+BEGIN
+                                                                              QUERY PLAN                                                                               
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Delete on lecturavibracion l  (cost=260.38..1859.60 rows=0 width=0) (actual time=31.921..31.924 rows=0 loops=1)
+   Buffers: shared hit=38478 read=94
+   ->  Hash Anti Join  (cost=260.38..1859.60 rows=1 width=12) (actual time=2.983..13.333 rows=19100 loops=1)
+         Hash Cond: ((l.id_sensor = a.id_sensor) AND (l.fecha_hora = a.fecha_hora_lectura))
+         Buffers: shared hit=278 read=94
+         ->  Index Scan using idx_lectura_fecha_cubriente on lecturavibracion l  (cost=0.42..904.29 rows=18543 width=18) (actual time=0.017..5.811 rows=19200 loops=1)
+               Index Cond: ((fecha_hora >= '2026-01-02 00:00:00'::timestamp without time zone) AND (fecha_hora < '2026-01-03 00:00:00'::timestamp without time zone))
+               Buffers: shared hit=164 read=94
+         ->  Hash  (cost=172.38..172.38 rows=5838 width=18) (actual time=2.954..2.956 rows=4906 loops=1)
+               Buckets: 8192  Batches: 1  Memory Usage: 333kB
+               Buffers: shared hit=114
+               ->  Seq Scan on alertamantenimiento a  (cost=0.00..172.38 rows=5838 width=18) (actual time=0.012..1.457 rows=5019 loops=1)
+                     Buffers: shared hit=114
+ Planning:
+   Buffers: shared hit=56
+ Planning Time: 0.605 ms
+ Trigger for constraint alertamantenimiento_id_sensor_fecha_hora_lectura_fkey: time=344.028 calls=19100
+ Execution Time: 377.950 ms
+(18 rows)
+
+ROLLBACK
+################ 3) ESPACIO QUE OCUPAN ################
+        tabla        | datos  | indices 
+---------------------+--------+---------
+ lecturavibracion    | 67 MB  | 124 MB
+ alertamantenimiento | 944 kB | 728 kB
+ ordentrabajo        | 296 kB | 96 kB
+ sensorvibracion     | 96 kB  | 120 kB
+ alertaorden         | 88 kB  | 104 kB
+ componenteturbina   | 72 kB  | 32 kB
+ turbina             | 48 kB  | 48 kB
+ parqueeolico        | 40 kB  | 16 kB
+ tecnico             | 40 kB  | 32 kB
+(9 rows)
+
+            indice            |        tabla        | tamano 
+------------------------------+---------------------+--------
+ idx_lectura_sensor_fecha_rms | lecturavibracion    | 44 MB
+ lecturavibracion_pkey        | lecturavibracion    | 41 MB
+ idx_lectura_fecha_cubriente  | lecturavibracion    | 39 MB
+ idx_alerta_lectura           | alertamantenimiento | 328 kB
+ alertamantenimiento_pkey     | alertamantenimiento | 232 kB
+ idx_alerta_sensor            | alertamantenimiento | 120 kB
+ ordentrabajo_pkey            | ordentrabajo        | 64 kB
+ alertaorden_pkey             | alertaorden         | 56 kB
+ sensorvibracion_codigo_key   | sensorvibracion     | 48 kB
+ idx_alertaorden_orden        | alertaorden         | 48 kB
+ idx_alerta_criticas_abiertas | alertamantenimiento | 48 kB
+ sensorvibracion_pkey         | sensorvibracion     | 40 kB
+ idx_sensor_componente        | sensorvibracion     | 32 kB
+ idx_orden_turbina            | ordentrabajo        | 32 kB
+ turbina_codigo_key           | turbina             | 16 kB
+ tecnico_correo_key           | tecnico             | 16 kB
+ turbina_pkey                 | turbina             | 16 kB
+ tecnico_pkey                 | tecnico             | 16 kB
+ parqueeolico_pkey            | parqueeolico        | 16 kB
+ idx_componente_turbina       | componenteturbina   | 16 kB
+ idx_turbina_parque           | turbina             | 16 kB
+ componenteturbina_pkey       | componenteturbina   | 16 kB
+(22 rows)
+

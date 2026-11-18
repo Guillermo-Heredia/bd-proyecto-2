@@ -1,0 +1,27 @@
+                                                                            QUERY PLAN                                                                             
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=21832.41..21840.74 rows=3330 width=36) (actual time=139.944..139.988 rows=665 loops=1)
+   Sort Key: (count(*)) DESC
+   Sort Method: quicksort  Memory: 66kB
+   ->  HashAggregate  (cost=21512.71..21637.59 rows=3330 width=36) (actual time=137.534..139.801 rows=665 loops=1)
+         Group Key: marcadas.id_sensor, marcadas.grp
+         Filter: (count(*) >= 3)
+         Batches: 1  Memory Usage: 2833kB
+         Rows Removed by Filter: 15865
+         ->  Subquery Scan on marcadas  (cost=10396.30..20887.71 rows=50000 width=20) (actual time=50.516..129.878 rows=20756 loops=1)
+               Filter: marcadas.sobre
+               Rows Removed by Filter: 79244
+               ->  WindowAgg  (cost=10396.30..19887.71 rows=100000 width=21) (actual time=50.514..125.652 rows=100000 loops=1)
+                     ->  Incremental Sort  (cost=10396.30..17637.71 rows=100000 width=21) (actual time=50.510..105.443 rows=100000 loops=1)
+                           Sort Key: lecturavibracion.id_sensor, lecturavibracion.fecha_hora
+                           Presorted Key: lecturavibracion.id_sensor
+                           Full-sort Groups: 800  Sort Method: quicksort  Average Memory: 28kB  Peak Memory: 28kB
+                           Pre-sorted Groups: 800  Sort Method: quicksort  Average Memory: 31kB  Peak Memory: 31kB
+                           ->  WindowAgg  (cost=10388.82..12888.82 rows=100000 width=21) (actual time=50.421..82.293 rows=100000 loops=1)
+                                 ->  Sort  (cost=10388.82..10638.82 rows=100000 width=13) (actual time=50.415..60.029 rows=100000 loops=1)
+                                       Sort Key: lecturavibracion.id_sensor, ((lecturavibracion.valor_rms > 2.5)), lecturavibracion.fecha_hora
+                                       Sort Method: external merge  Disk: 2648kB
+                                       ->  Seq Scan on lecturavibracion  (cost=0.00..2084.00 rows=100000 width=13) (actual time=0.008..14.376 rows=100000 loops=1)
+ Planning Time: 0.324 ms
+ Execution Time: 140.927 ms
+(24 rows)

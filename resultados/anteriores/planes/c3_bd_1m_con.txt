@@ -1,0 +1,38 @@
+                                                                                                     QUERY PLAN                                                                                                      
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=257378.02..257460.57 rows=33021 width=36) (actual time=1460.237..1460.516 rows=6825 loops=1)
+   Sort Key: (count(*)) DESC
+   Sort Method: quicksort  Memory: 619kB
+   ->  GroupAggregate  (cost=628.40..254899.61 rows=33021 width=36) (actual time=10.390..1458.163 rows=6825 loops=1)
+         Group Key: marcadas.id_sensor, marcadas.grp
+         Filter: (count(*) >= 3)
+         Rows Removed by Filter: 153930
+         ->  Incremental Sort  (cost=628.40..247463.75 rows=495805 width=20) (actual time=10.350..1400.445 rows=202278 loops=1)
+               Sort Key: marcadas.id_sensor, marcadas.grp
+               Presorted Key: marcadas.id_sensor
+               Full-sort Groups: 800  Sort Method: quicksort  Average Memory: 28kB  Peak Memory: 28kB
+               Pre-sorted Groups: 800  Sort Method: quicksort  Average Memory: 36kB  Peak Memory: 36kB
+               ->  Subquery Scan on marcadas  (cost=327.24..218255.85 rows=495805 width=20) (actual time=8.927..1356.260 rows=202278 loops=1)
+                     Filter: marcadas.sobre
+                     Rows Removed by Filter: 789332
+                     ->  WindowAgg  (cost=327.24..208339.75 rows=991610 width=21) (actual time=8.920..1306.182 rows=991610 loops=1)
+                           ->  Incremental Sort  (cost=327.24..186028.53 rows=991610 width=21) (actual time=8.915..1068.958 rows=991610 loops=1)
+                                 Sort Key: lecturavibracion.id_sensor, lecturavibracion.fecha_hora
+                                 Presorted Key: lecturavibracion.id_sensor
+                                 Full-sort Groups: 800  Sort Method: quicksort  Average Memory: 28kB  Peak Memory: 28kB
+                                 Pre-sorted Groups: 800  Sort Method: quicksort  Average Memory: 117kB  Peak Memory: 117kB
+                                 ->  WindowAgg  (cost=110.36..122670.68 rows=991610 width=21) (actual time=7.927..829.457 rows=991610 loops=1)
+                                       ->  Incremental Sort  (cost=110.36..100359.45 rows=991610 width=13) (actual time=7.918..569.584 rows=991610 loops=1)
+                                             Sort Key: lecturavibracion.id_sensor, ((lecturavibracion.valor_rms > 2.5)), lecturavibracion.fecha_hora
+                                             Presorted Key: lecturavibracion.id_sensor
+                                             Full-sort Groups: 800  Sort Method: quicksort  Average Memory: 28kB  Peak Memory: 28kB
+                                             Pre-sorted Groups: 800  Sort Method: quicksort  Average Memory: 107kB  Peak Memory: 107kB
+                                             ->  Index Only Scan using idx_lectura_sensor_fecha_rms on lecturavibracion  (cost=0.42..37001.60 rows=991610 width=13) (actual time=7.360..201.887 rows=991610 loops=1)
+                                                   Heap Fetches: 0
+ Planning Time: 0.444 ms
+ JIT:
+   Functions: 17
+   Options: Inlining false, Optimization false, Expressions true, Deforming true
+   Timing: Generation 0.861 ms, Inlining 0.000 ms, Optimization 0.291 ms, Emission 7.056 ms, Total 8.208 ms
+ Execution Time: 1475.845 ms
+(35 rows)

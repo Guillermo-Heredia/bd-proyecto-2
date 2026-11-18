@@ -1,0 +1,26 @@
+                                                                         QUERY PLAN                                                                         
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=184.52..184.91 rows=155 width=36) (actual time=1.300..1.301 rows=0 loops=1)
+   Sort Key: (count(*)) DESC
+   Sort Method: quicksort  Memory: 25kB
+   ->  HashAggregate  (cost=173.08..178.88 rows=155 width=36) (actual time=1.286..1.287 rows=0 loops=1)
+         Group Key: marcadas.id_sensor, marcadas.grp
+         Filter: (count(*) >= 3)
+         Batches: 1  Memory Usage: 73kB
+         Rows Removed by Filter: 196
+         ->  Subquery Scan on marcadas  (cost=71.37..166.83 rows=500 width=20) (actual time=0.350..1.218 rows=207 loops=1)
+               Filter: marcadas.sobre
+               Rows Removed by Filter: 793
+               ->  WindowAgg  (cost=71.37..156.83 rows=1000 width=21) (actual time=0.348..1.176 rows=1000 loops=1)
+                     ->  Incremental Sort  (cost=71.37..134.33 rows=1000 width=21) (actual time=0.346..0.850 rows=1000 loops=1)
+                           Sort Key: lecturavibracion.id_sensor, lecturavibracion.fecha_hora
+                           Presorted Key: lecturavibracion.id_sensor
+                           Full-sort Groups: 32  Sort Method: quicksort  Average Memory: 26kB  Peak Memory: 26kB
+                           ->  WindowAgg  (cost=71.33..96.33 rows=1000 width=21) (actual time=0.312..0.672 rows=1000 loops=1)
+                                 ->  Sort  (cost=71.33..73.83 rows=1000 width=13) (actual time=0.308..0.347 rows=1000 loops=1)
+                                       Sort Key: lecturavibracion.id_sensor, ((lecturavibracion.valor_rms > 2.5)), lecturavibracion.fecha_hora
+                                       Sort Method: quicksort  Memory: 71kB
+                                       ->  Seq Scan on lecturavibracion  (cost=0.00..21.50 rows=1000 width=13) (actual time=0.009..0.144 rows=1000 loops=1)
+ Planning Time: 0.303 ms
+ Execution Time: 1.399 ms
+(23 rows)
